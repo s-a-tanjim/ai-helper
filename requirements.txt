@@ -1,0 +1,6 @@
+openai~=0.27.8
+click
+rich
+rich_click
+pick~=2.2.0
+pyperclip

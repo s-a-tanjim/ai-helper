@@ -1,4 +1,3 @@
-
 powershell_prompt = """Correctly answer the asked question. Return 'Sorry, Can't answer that.' if the question isn't related to technology.
 
 Q - get into a docker container.
@@ -165,3 +164,5 @@ Q - Capital city of Ukrain?
 A - Sorry, Can't answer that.
 
 Q - """
+
+grammer_system_prompt = "check the following text for spelling and grammar errors. Highlight the error and also provide the correct sentence in a new line. Provide all responses in markdown format."

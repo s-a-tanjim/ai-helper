@@ -1,20 +1,30 @@
-import ai
+import os
 
-video_file = r"C:\Users\anwar\Nextcloud\Meeting Personal\InfoImage\infoimage leads\Zoom Meeting 2023-06-10 00-09-01_optimized.m4a"
-# audio_file = os.path.splitext(video_file)[0] + ".m4a"
-#
-# # seperate the audio from the video with copy mode
-# command = f'ffmpeg -i "{video_file}" -vn -acodec copy "{audio_file}"'
-# os.system(command)
+import openai
+from pydub import AudioSegment
 
-audio_file = open(video_file, "rb")
+video_file = r"C:\Users\anwar\Nextcloud\Meeting Personal\InfoImage\infoimage leads\Zoom Meeting 2023-06-10 00-09-01_optimized.mp4"
 
-# breakdown the audio into 25mb chunks and transcribe each chunk
-for chunk in openai.Audio.chunk(audio_file):
-    print(openai.Audio.transcribe("whisper-1", chunk).text)
+song = AudioSegment.from_file(video_file, "mp4")
 
-transcript = openai.Audio.transcribe("whisper-1", audio_file)
+# PyDub handles time in milliseconds
+ten_minutes = 10 * 60 * 1000
+total_length = len(song)
 
-# write the transcript to a file
-with open("transcript.txt", "w") as f:
-    f.write(transcript.text)
+# loop through the song, adding 10 minutes to each slice
+for i in range(0, total_length, ten_minutes):
+    # add 10 minutes
+    t1 = i
+    t2 = i + ten_minutes
+
+    # limit the last slice to the total_length
+    if t2 > total_length:
+        t2 = total_length
+
+    # create a new file for each slice
+    sliced_audio = song[t1:t2]
+    sliced_audio.export(f"slice{i}.mp3", format="mp3")
+
+    openai.api_key = os.environ["OPENAI_API_KEY"]
+
+    response = openai.whi

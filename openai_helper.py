@@ -84,4 +84,11 @@ def cost(total_tokens):
         "gpt-3.5-turbo-16k": 0.004,
     }.get(config.model, 0)
 
-    return model_rate * (total_tokens / 1000)
+    return round(model_rate * (total_tokens / 1000), 4)
+
+
+def chat_completion(messages):
+    return openai.ChatCompletion.create(
+        model=config.model,
+        messages=messages
+    )

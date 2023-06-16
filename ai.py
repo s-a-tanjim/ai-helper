@@ -81,9 +81,30 @@ def gr_completion(query):
             console_helper.console.print(Markdown(choice.message.content))
 
 
+@click.command('assessment', help="Guess assessment hours")
+@click.argument('query', nargs=-1)
+def assessment_completion(query):
+    query = " ".join(query)
+    query = re.sub(r'\n+', ' ', query)
+    console_helper.console.log("Model: ", openai_helper.config.model)
+
+    prompt = cli_helper.assessment + 'Assessment: ' + query + '\nHours:'
+    response = openai_helper.complete(prompt)
+
+    console_helper.console.log("Tokens: ", response.usage.total_tokens)
+    console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
+
+    for choice in response.choices:
+        if choice.text:
+            text = choice.text.replace('\n', '\n\n')
+            console_helper.console.print(Markdown('Hours:' + text))
+        console_helper.console.print(Markdown('---'))
+
+
 cli.add_command(select_model)
 cli.add_command(cli_completion)
 cli.add_command(gr_completion)
+cli.add_command(assessment_completion)
 
 if __name__ == '__main__':
     cli()

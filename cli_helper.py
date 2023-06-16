@@ -168,4 +168,58 @@ Q - """
 grammer_system_prompt = """Check the following text for spelling and grammar errors.
 Highlight the error and also provide the correct sentence in a new line.
 Provide all responses in markdown format.
-Also provide a more concise and improved version of the sentence."""
+Also provide a more concise and improved version of the sentence.
+Each section,Errors,Corrected,Improved should be separated by markdown horizontal line."""
+
+
+assessment = """You are required to provide a time estimate based on the assessment. Follow the below format.
+
+Assessment: Adding a simple one page notice.
+Modify ABCDDL001.dfa
+Hours: 4
+Reasons: 
+1. Formatting and setup: 4 hours.
+
+---
+
+Assessment: Setup with a flat file index.
+Hours: 8
+Reasons: 
+1. Configuring and integrating the flat file index: 8 hours.
+
+---
+
+Assessment: Simple flat file Direct Mail setup.
+Hours: 5
+Reasons: 
+1. Formatting and setup: 5 hours.
+
+---
+
+Assessment: Non-selective setup.
+Hours: 8
+Reasons: 
+1. Configuring and setting up the non-selective criteria: 8 hours.
+
+---
+
+Assessment: Setup for elective insert by account list or selective by program.
+Hours: 6
+Reasons: 
+1. Configuring and setting up the elective insert: 6 hours.
+
+---
+
+Assessment: Requirement for a prefilled dividend rate sheet.
+Hours: 5
+Reasons: 
+1. Development of prefilled dividend rate sheet: 5 hours.
+
+---
+
+Assessment: If the rate sheet template is fixed and the values need to update frequently.
+Hours: 5
+Reasons: 
+1. Development of a solution to pull rates values from rate values file: 5 hours.
+
+---"""

@@ -4,6 +4,8 @@ import re
 import rich_click as click
 from pick import pick
 from rich.markdown import Markdown
+from rich.prompt import Prompt
+from rich.status import Status
 from rich_click.cli import patch
 
 import cli_helper
@@ -101,10 +103,47 @@ def assessment_completion(query):
         console_helper.console.print(Markdown('---'))
 
 
+@click.command('chat', help="Chat with GPT-3")
+def chat():
+    openai_helper.config.model = 'gpt-3.5-turbo'
+    console_helper.console.log("Model: ", openai_helper.config.model)
+
+    messages = [
+        {'role': 'system', 'content': 'You are a helpful AI assistant. Respond always with Markdown.'},
+        # {'role': 'user', 'content': 'I am good, how about you?'},
+    ]
+
+    cost = 0
+    token = 0
+    status = Status('Thinking...')
+
+    try:
+        while True:
+            input_text = Prompt.ask("You: ")
+            messages.append({'role': 'user', 'content': input_text})
+
+            status.start()
+            response = openai_helper.chat_completion(messages)
+            cost += openai_helper.cost(response.usage.total_tokens)
+            token += response.usage.total_tokens
+            status.stop()
+
+            for choice in response.choices:
+                if choice.message.content:
+                    console_helper.console.print(Markdown(choice.message.content))
+                    messages.append({'role': 'system', 'content': choice.message.content})
+
+            console_helper.console.log("Tokens: ", token)
+            console_helper.console.log("Cost: ", cost)
+    except KeyboardInterrupt:
+        pass
+
+
 cli.add_command(select_model)
 cli.add_command(cli_completion)
 cli.add_command(gr_completion)
 cli.add_command(assessment_completion)
+cli.add_command(chat)
 
 if __name__ == '__main__':
     cli()

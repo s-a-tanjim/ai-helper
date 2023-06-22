@@ -4,13 +4,12 @@ import re
 import rich_click as click
 from pick import pick
 from rich.markdown import Markdown
-from rich.prompt import Prompt
 from rich.status import Status
 from rich_click.cli import patch
 
-import cli_helper
 import console_helper
 import openai_helper
+import prompt_helper
 
 patch()
 
@@ -35,10 +34,10 @@ def cli_completion(query):
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     if os.name == "nt":
-        prompt = cli_helper.powershell_prompt
+        prompt = prompt_helper.powershell_prompt
         console_helper.console.log("Detected Windows")
     else:
-        prompt = cli_helper.unix_prompt
+        prompt = prompt_helper.unix_prompt
         console_helper.console.log("Detected Unix")
 
     prompt = prompt + query + "\nA -"
@@ -68,7 +67,7 @@ def gr_completion(query):
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     messages = [
-        {'role': 'system', 'content': cli_helper.grammer_system_prompt},
+        {'role': 'system', 'content': prompt_helper.grammer_system_prompt},
         {'role': 'user', 'content': query},
     ]
 
@@ -90,7 +89,7 @@ def assessment_completion(query):
     query = re.sub(r'\n+', ' ', query)
     console_helper.console.log("Model: ", openai_helper.config.model)
 
-    prompt = cli_helper.assessment + 'Assessment: ' + query + '\nHours:'
+    prompt = prompt_helper.assessment + 'Assessment: ' + query + '\nHours:'
     response = openai_helper.complete(prompt)
 
     console_helper.console.log("Tokens: ", response.usage.total_tokens)
@@ -119,7 +118,7 @@ def chat():
 
     try:
         while True:
-            input_text = Prompt.ask("You: ")
+            input_text = console_helper.get_multiline_input("You")
             messages.append({'role': 'user', 'content': input_text})
 
             status.start()
@@ -128,9 +127,11 @@ def chat():
             token += response.usage.total_tokens
             status.stop()
 
+            console_helper.console.print(Markdown('---'))
+
             for choice in response.choices:
                 if choice.message.content:
-                    console_helper.console.print(Markdown(choice.message.content))
+                    console_helper.console.print(Markdown('AI: ' + choice.message.content))
                     messages.append({'role': 'system', 'content': choice.message.content})
 
             console_helper.console.log("Tokens: ", token)

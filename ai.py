@@ -47,16 +47,17 @@ def cli_completion(query):
     console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
 
     command = response.choices[0].text
-    command = re.findall(r"`(.*)`", command)[0]
+    try:
+        command = re.findall(r"```(.*)```", command)[0]
+    except IndexError:
+        print("No command found: ", command)
+        return
+
     print(command)
 
     # copy to clipboard
-    if os.name == "nt":
-        import pyperclip
-        pyperclip.copy(command)
-    else:
-        import subprocess
-        subprocess.run("echo " + command + " | xclip -selection clipboard", shell=True)
+    import pyperclip
+    pyperclip.copy(command)
 
 
 @click.command('gr', help="Grammar")

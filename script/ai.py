@@ -7,9 +7,7 @@ from rich.markdown import Markdown
 from rich.status import Status
 from rich_click.cli import patch
 
-import console_helper
-import openai_helper
-import prompt_helper
+from helper import prompt_helper, openai_helper, console_helper
 
 patch()
 

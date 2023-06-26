@@ -1,6 +1,6 @@
 import os
 
-import openai
+import script
 from pydub import AudioSegment
 
 video_file = r"C:\Users\anwar\Nextcloud\Meeting Personal\InfoImage\infoimage leads\Zoom Meeting 2023-06-10 00-09-01_optimized.mp4"
@@ -25,6 +25,6 @@ for i in range(0, total_length, ten_minutes):
     sliced_audio = song[t1:t2]
     sliced_audio.export(f"slice{i}.mp3", format="mp3")
 
-    openai.api_key = os.environ["OPENAI_API_KEY"]
+    script.api_key = os.environ["OPENAI_API_KEY"]
 
-    response = openai.whi
+    response = script.whi

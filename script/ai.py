@@ -26,7 +26,7 @@ def select_model():
 
 
 @click.command('cli', help="Generates cli commands")
-@click.argument('query', nargs=-1)
+@click.argument('query', nargs=-1, required=True)
 def cli_completion(query):
     query = " ".join(query)
     console_helper.console.log("Model: ", openai_helper.config.model)
@@ -37,6 +37,34 @@ def cli_completion(query):
     else:
         prompt = prompt_helper.unix_prompt
         console_helper.console.log("Detected Unix")
+
+    prompt = prompt + query + "\nA -"
+    response = openai_helper.complete(prompt)
+
+    console_helper.console.log("Tokens: ", response.usage.total_tokens)
+    console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
+
+    command = response.choices[0].text
+    try:
+        command = re.findall(r"```(.*)```", command)[0]
+    except IndexError:
+        print("No command found: ", command)
+        return
+
+    print(command)
+
+    # copy to clipboard
+    import pyperclip
+    pyperclip.copy(command)
+
+
+@click.command('clie', help="Generates cli commands")
+@click.argument('query', nargs=-1, required=True)
+def cli_completion(query):
+    query = " ".join(query)
+    console_helper.console.log("Model: ", openai_helper.config.model)
+    prompt = prompt_helper.unix_prompt_enhanced
+    console_helper.console.log("Detected Unix")
 
     prompt = prompt + query + "\nA -"
     response = openai_helper.complete(prompt)

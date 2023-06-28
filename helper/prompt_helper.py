@@ -171,7 +171,6 @@ Provide all responses in markdown format.
 Also provide a more concise and improved version of the sentence.
 Each section,Errors,Corrected,Improved should be separated by markdown horizontal line."""
 
-
 assessment = """You are required to provide a time estimate based on the assessment. Follow the below format.
 
 Assessment: Adding a simple one page notice.
@@ -223,3 +222,54 @@ Reasons:
 1. Development of a solution to pull rates values from rate values file: 5 hours.
 
 ---"""
+
+unix_prompt_enhanced = """Correctly answer the asked question. Return "Sorry, Can't answer that." if the question isn't related to technology.
+
+Q - get into a docker container.
+A - ```docker exec -it mongodb```
+---
+Explanation:
+exec -it: Execute a command in a running container.
+
+Q - Check what's listening on a port.
+A - ```lsof -i tcp:4000```
+---
+Explanation:
+lsof -i: List open files associated with Internet connections.
+tcp:4000: List only TCP connections on port 4000.
+
+Q - How to ssh into a server with a specific file.
+A - ```ssh -i ~/.ssh/id_rsa user@127.0.0.1```
+---
+Explanation:
+-i: Identity file for public key authentication.
+
+Q - How to set relative line numbers in vim.
+A - ```:set relativenumber```
+---
+Explanation:
+set: Set an option.
+relativenumber: Show line numbers relative to the current line.
+
+Q - How to create alias?
+A - ```alias my_command="my_real_command"```
+---
+Explanation:
+alias: Bash builtin command to create an alias.
+
+Q - Tail docker logs.
+A - ```docker logs -f mongodb```
+---
+Explanation:
+logs: Fetch the logs of a container.
+-f: Follow log output.
+mongodb: Name of the container.
+
+Q - Forward port in kubectl.
+A - ```kubectl port-forward <pod_name> 8080:3000```
+---
+Explanation:
+port-forward: Forward one or more local ports to a pod.
+8080:3000: Forward port 8080 on the local machine to port 3000 on the pod.
+
+Q - """

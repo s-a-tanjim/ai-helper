@@ -79,7 +79,9 @@ def clie_completion(query):
         print("No command found: ", command)
         return
 
-    print(command)
+    for choice in response.choices:
+        if choice.text:
+            console_helper.console.print(Markdown('AI: ' + choice.text))
 
     # copy to clipboard
     import pyperclip

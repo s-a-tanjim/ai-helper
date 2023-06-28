@@ -26,7 +26,7 @@ def select_model():
     openai_helper.set_model(option)
 
 
-@click.command('cli_gpt', help="Grammar")
+@click.command('cli_gpt', help="Generates cli command using GPT-3")
 @click.argument('query', nargs=-1)
 def cli_gpt_completion(query):
     query = " ".join(query)
@@ -38,7 +38,7 @@ def cli_gpt_completion(query):
         {'role': 'user', 'content': query},
     ]
 
-    response = openai_helper.chat_completion(messages, stop_sequences=["\n\n\n\n"])
+    response = openai_helper.chat_completion(messages, stop=["\n\n\n\n"])
 
     console_helper.console.log("Tokens: ", response.usage.total_tokens)
     console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))

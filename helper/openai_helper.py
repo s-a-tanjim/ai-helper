@@ -90,9 +90,9 @@ def cost(total_tokens):
     return round(model_rate * (total_tokens / 1000), 4)
 
 
-def chat_completion(messages: list, stop_sequences: list = None):
+def chat_completion(messages: list, **kwargs):
     return openai.ChatCompletion.create(
         model=config.model,
         messages=messages,
-        stop=stop_sequences
+        **kwargs
     )

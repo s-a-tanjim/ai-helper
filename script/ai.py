@@ -1,6 +1,7 @@
 import os
 import re
 
+import pyperclip
 import rich_click as click
 from pick import pick
 from rich.markdown import Markdown
@@ -25,67 +26,34 @@ def select_model():
     openai_helper.set_model(option)
 
 
-@click.command('cli', help="Generates cli commands")
-@click.argument('query', nargs=-1, required=True)
-def cli_completion(query):
+@click.command('cli_gpt', help="Grammar")
+@click.argument('query', nargs=-1)
+def cli_gpt_completion(query):
     query = " ".join(query)
+    openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
-    if os.name == "nt":
-        prompt = prompt_helper.powershell_prompt
-        console_helper.console.log("Detected Windows")
-    else:
-        prompt = prompt_helper.unix_prompt
-        console_helper.console.log("Detected Unix")
+    messages = [
+        {'role': 'system', 'content': prompt_helper.unix_prompt_gpt35},
+        {'role': 'user', 'content': query},
+    ]
 
-    prompt = prompt + query + "\nA -"
-    response = openai_helper.complete(prompt)
+    response = openai_helper.chat_completion(messages, stop_sequences=["\n\n\n\n"])
 
     console_helper.console.log("Tokens: ", response.usage.total_tokens)
     console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
 
-    command = response.choices[0].text
-    try:
-        command = re.findall(r"```(.*)```", command)[0]
-    except IndexError:
-        print("No command found: ", command)
-        return
-
-    print(command)
-
-    # copy to clipboard
-    import pyperclip
-    pyperclip.copy(command)
-
-
-@click.command('clie', help="Generates cli commands")
-@click.argument('query', nargs=-1, required=True)
-def clie_completion(query):
-    query = " ".join(query)
-    console_helper.console.log("Model: ", openai_helper.config.model)
-    prompt = prompt_helper.unix_prompt_enhanced
-    console_helper.console.log("Detected Unix")
-
-    prompt = prompt + query + "\nA -"
-    response = openai_helper.complete(prompt)
-
-    console_helper.console.log("Tokens: ", response.usage.total_tokens)
-    console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
-
-    command = response.choices[0].text
-    try:
-        command = re.findall(r"```(.*)```", command)[0]
-    except IndexError:
-        print("No command found: ", command)
-        return
-
+    command = ""
     for choice in response.choices:
-        if choice.text:
-            console_helper.console.print(Markdown('AI: ' + choice.text))
+        if choice.message.content:
+            console_helper.console.print(Markdown(choice.message.content))
+            try:
+                command = re.findall(r'```(.*?)```', choice.message.content)[0]
+            except IndexError as e:
+                console_helper.console.log(e)
 
-    # copy to clipboard
-    import pyperclip
-    pyperclip.copy(command)
+    if command:
+        pyperclip.copy(command)
 
 
 @click.command('gr', help="Grammar")
@@ -107,7 +75,6 @@ def gr_completion(query):
 
     for choice in response.choices:
         if choice.message.content:
-            print(choice.message.content)
             console_helper.console.print(Markdown(choice.message.content))
 
 
@@ -170,9 +137,8 @@ def chat():
 
 
 cli.add_command(select_model)
-cli.add_command(cli_completion)
-cli.add_command(clie_completion)
 cli.add_command(gr_completion)
+cli.add_command(cli_gpt_completion)
 cli.add_command(assessment_completion)
 cli.add_command(chat)
 

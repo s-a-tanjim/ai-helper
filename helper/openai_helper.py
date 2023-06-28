@@ -61,7 +61,10 @@ if __name__ == '__main__':
     pprint(get_models())
 
 
-def complete(prompt):
+def complete(prompt: str, stop_sequences: list = None):
+    if stop_sequences is None:
+        stop_sequences = ["\n\n"]
+
     return openai.Completion.create(
         engine=config.model,
         prompt=prompt,
@@ -70,7 +73,7 @@ def complete(prompt):
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0,
-        stop=["\n\n"]
+        stop=stop_sequences
     )
 
 
@@ -87,8 +90,9 @@ def cost(total_tokens):
     return round(model_rate * (total_tokens / 1000), 4)
 
 
-def chat_completion(messages):
+def chat_completion(messages: list, stop_sequences: list = None):
     return openai.ChatCompletion.create(
         model=config.model,
-        messages=messages
+        messages=messages,
+        stop=stop_sequences
     )

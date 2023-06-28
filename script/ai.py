@@ -60,7 +60,7 @@ def cli_completion(query):
 
 @click.command('clie', help="Generates cli commands")
 @click.argument('query', nargs=-1, required=True)
-def cli_completion(query):
+def clie_completion(query):
     query = " ".join(query)
     console_helper.console.log("Model: ", openai_helper.config.model)
     prompt = prompt_helper.unix_prompt_enhanced
@@ -169,6 +169,7 @@ def chat():
 
 cli.add_command(select_model)
 cli.add_command(cli_completion)
+cli.add_command(clie_completion)
 cli.add_command(gr_completion)
 cli.add_command(assessment_completion)
 cli.add_command(chat)

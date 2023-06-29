@@ -30,7 +30,7 @@ def select_model():
     openai_helper.set_model(option)
 
 
-@click.command('cli_gpt', help="Generates cli command using GPT-3")
+@click.command('cli', help="Generates cli command using GPT-3")
 @click.argument('query', nargs=-1)
 def cli_gpt_completion(query):
     query = " ".join(query)
@@ -42,7 +42,8 @@ def cli_gpt_completion(query):
         {'role': 'user', 'content': query},
     ]
 
-    response = openai_helper.chat_completion(messages, stop=["\n\n\n\n"])
+    with Status("Thinking..."):
+        response = openai_helper.chat_completion(messages, stop=["\n\n\n\n"])
 
     console_helper.console.log("Tokens: ", response.usage.total_tokens)
     console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
@@ -72,7 +73,8 @@ def gr_completion(query):
         {'role': 'user', 'content': query},
     ]
 
-    response = openai_helper.chat_completion(messages)
+    with Status("Thinking..."):
+        response = openai_helper.chat_completion(messages)
 
     console_helper.console.log("Tokens: ", response.usage.total_tokens)
     console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
@@ -90,7 +92,8 @@ def assessment_completion(query):
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     prompt = prompt_helper.assessment + 'Assessment: ' + query + '\nHours:'
-    response = openai_helper.complete(prompt)
+    with Status("Thinking..."):
+        response = openai_helper.complete(prompt)
 
     console_helper.console.log("Tokens: ", response.usage.total_tokens)
     console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
@@ -100,21 +103,6 @@ def assessment_completion(query):
             text = choice.text.replace('\n', '\n\n')
             console_helper.console.print(Markdown('Hours:' + text))
         console_helper.console.print(Markdown('---'))
-
-
-def generate_table() -> Table:
-    """Make a new table."""
-    table = Table()
-    table.add_column("ID")
-    table.add_column("Value")
-    table.add_column("Status")
-
-    for row in range(random.randint(2, 6)):
-        value = random.random() * 100
-        table.add_row(
-            f"{row}", f"{value:3.2f}", "[red]ERROR" if value < 50 else "[green]SUCCESS"
-        )
-    return table
 
 
 @click.command('chat', help="Chat with GPT-3")

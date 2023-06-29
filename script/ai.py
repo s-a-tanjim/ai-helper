@@ -13,6 +13,7 @@ from rich.table import Table
 from rich_click.cli import patch
 
 from helper import prompt_helper, openai_helper, console_helper
+from helper.console_helper import chat_in_console
 
 patch()
 
@@ -33,80 +34,47 @@ def select_model():
 @click.command('cli', help="Generates cli command using GPT-3")
 @click.argument('query', nargs=-1)
 def cli_gpt_completion(query):
-    query = " ".join(query)
     openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
-    messages = [
-        {'role': 'system', 'content': prompt_helper.unix_prompt_gpt35},
-        {'role': 'user', 'content': query},
-    ]
+    messages = [{'role': 'system', 'content': prompt_helper.unix_prompt_gpt35}]
+    last_message_text = chat_in_console(messages, query)
 
-    with Status("Thinking..."):
-        response = openai_helper.chat_completion(messages, stop=["\n\n\n\n"])
-
-    console_helper.console.log("Tokens: ", response.usage.total_tokens)
-    console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
-
-    command = ""
-    for choice in response.choices:
-        if choice.message.content:
-            console_helper.console.print(Markdown(choice.message.content))
-            try:
-                command = re.findall(r'```(.*?)```', choice.message.content)[0]
-            except IndexError as e:
-                console_helper.console.log(e)
-
-    if command:
-        pyperclip.copy(command)
+    try:
+        command = re.findall(r'```(.*?)```', last_message_text)[0]
+        if command:
+            pyperclip.copy(command)
+            console_helper.console.log("[green]Copied to clipboard: [/green]", command)
+    except IndexError:
+        console_helper.console.log("[yellow]No command found[/yellow]")
 
 
 @click.command('gr', help="Grammar")
 @click.argument('query', nargs=-1)
 def gr_completion(query):
-    query = " ".join(query)
     openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
-    messages = [
-        {'role': 'system', 'content': prompt_helper.grammer_system_prompt},
-        {'role': 'user', 'content': query},
-    ]
-
-    with Status("Thinking..."):
-        response = openai_helper.chat_completion(messages)
-
-    console_helper.console.log("Tokens: ", response.usage.total_tokens)
-    console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
-
-    for choice in response.choices:
-        if choice.message.content:
-            console_helper.console.print(Markdown(choice.message.content))
+    messages = [{'role': 'system', 'content': prompt_helper.grammer_system_prompt}]
+    chat_in_console(messages, query)
 
 
 @click.command('assessment', help="Guess assessment hours")
 @click.argument('query', nargs=-1)
 def assessment_completion(query):
-    query = " ".join(query)
-    query = re.sub(r'\n+', ' ', query)
+    openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
-    prompt = prompt_helper.assessment + 'Assessment: ' + query + '\nHours:'
-    with Status("Thinking..."):
-        response = openai_helper.complete(prompt)
+    messages = [
+        {'role': 'system', 'content': prompt_helper.assessment},
+    ]
 
-    console_helper.console.log("Tokens: ", response.usage.total_tokens)
-    console_helper.console.log("Cost: ", openai_helper.cost(response.usage.total_tokens))
-
-    for choice in response.choices:
-        if choice.text:
-            text = choice.text.replace('\n', '\n\n')
-            console_helper.console.print(Markdown('Hours:' + text))
-        console_helper.console.print(Markdown('---'))
+    chat_in_console(messages, query)
 
 
 @click.command('chat', help="Chat with GPT-3")
-def chat():
+@click.argument('query', nargs=-1)
+def chat(query):
     openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
@@ -114,46 +82,7 @@ def chat():
         {'role': 'system', 'content': 'You are a helpful AI assistant. Respond always with Markdown.'},
     ]
 
-    cost = 0
-    token = 0
-
-    try:
-        while True:
-            input_text = console_helper.get_multiline_input('You')
-            messages.append({'role': 'user', 'content': input_text})
-
-            response = openai_helper.chat_completion(messages, stream=True)
-
-            response_text = ""
-            with Live(refresh_per_second=6) as live:
-                for chunk in response:
-                    for choice in chunk.choices:
-
-                        if choice.finish_reason == 'stop':
-                            live.update(Markdown('**AI:** ' + response_text))
-                            break
-
-                        if choice.delta.content:
-                            response_text += choice.delta.content
-                            token += 2
-
-                        live.update(Markdown(
-                            '**AI:** ' +
-                            response_text +
-                            "\n\n---"
-                            f"\nResponse Tokens: {token}"
-                            f"\nCost: {openai_helper.cost(token)}"
-                            "\n\n---"
-                        ))
-
-            messages.append({'role': 'system', 'content': response_text})
-            console_helper.console.print(Markdown('---'))
-            console_helper.console.log("Response Tokens: ", token)
-            console_helper.console.log("Cost: ", openai_helper.cost(token))
-            console_helper.console.print(Markdown('---'))
-
-    except KeyboardInterrupt:
-        pass
+    chat_in_console(messages, query)
 
 
 cli.add_command(select_model)

@@ -135,7 +135,8 @@ Reasons:
 
 ---"""
 
-unix_prompt_gpt35 = """Provide cli command. Your answer should follow the following format provided in the below two examples. Surround the command in "```" and must provide explanation of the command in markdown format after a '---' line.
+unix_prompt_gpt35 = """Provide cli command. Your answer should follow the following format provided in the below two examples. 
+Command start with '```' and close with '```'. Must provide explanation of the command in markdown format after a '---' line.
 
 User: get into a docker container.
 You: 

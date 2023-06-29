@@ -1,11 +1,15 @@
 import os
+import random
 import re
+import time
 
 import pyperclip
 import rich_click as click
 from pick import pick
+from rich.live import Live
 from rich.markdown import Markdown
 from rich.status import Status
+from rich.table import Table
 from rich_click.cli import patch
 
 from helper import prompt_helper, openai_helper, console_helper
@@ -98,6 +102,21 @@ def assessment_completion(query):
         console_helper.console.print(Markdown('---'))
 
 
+def generate_table() -> Table:
+    """Make a new table."""
+    table = Table()
+    table.add_column("ID")
+    table.add_column("Value")
+    table.add_column("Status")
+
+    for row in range(random.randint(2, 6)):
+        value = random.random() * 100
+        table.add_row(
+            f"{row}", f"{value:3.2f}", "[red]ERROR" if value < 50 else "[green]SUCCESS"
+        )
+    return table
+
+
 @click.command('chat', help="Chat with GPT-3")
 def chat():
     openai_helper.config.model = 'gpt-3.5-turbo'
@@ -105,33 +124,46 @@ def chat():
 
     messages = [
         {'role': 'system', 'content': 'You are a helpful AI assistant. Respond always with Markdown.'},
-        # {'role': 'user', 'content': 'I am good, how about you?'},
     ]
 
     cost = 0
     token = 0
-    status = Status('Thinking...')
 
     try:
         while True:
-            input_text = console_helper.get_multiline_input("You")
+            input_text = console_helper.get_multiline_input('You')
             messages.append({'role': 'user', 'content': input_text})
 
-            status.start()
-            response = openai_helper.chat_completion(messages)
-            cost += openai_helper.cost(response.usage.total_tokens)
-            token += response.usage.total_tokens
-            status.stop()
+            response = openai_helper.chat_completion(messages, stream=True)
 
+            response_text = ""
+            with Live(refresh_per_second=6) as live:
+                for chunk in response:
+                    for choice in chunk.choices:
+
+                        if choice.finish_reason == 'stop':
+                            live.update(Markdown('**AI:** ' + response_text))
+                            break
+
+                        if choice.delta.content:
+                            response_text += choice.delta.content
+                            token += 2
+
+                        live.update(Markdown(
+                            '**AI:** ' +
+                            response_text +
+                            "\n\n---"
+                            f"\nResponse Tokens: {token}"
+                            f"\nCost: {openai_helper.cost(token)}"
+                            "\n\n---"
+                        ))
+
+            messages.append({'role': 'system', 'content': response_text})
+            console_helper.console.print(Markdown('---'))
+            console_helper.console.log("Response Tokens: ", token)
+            console_helper.console.log("Cost: ", openai_helper.cost(token))
             console_helper.console.print(Markdown('---'))
 
-            for choice in response.choices:
-                if choice.message.content:
-                    console_helper.console.print(Markdown('AI: ' + choice.message.content))
-                    messages.append({'role': 'system', 'content': choice.message.content})
-
-            console_helper.console.log("Tokens: ", token)
-            console_helper.console.log("Cost: ", cost)
     except KeyboardInterrupt:
         pass
 

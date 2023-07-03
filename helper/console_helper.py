@@ -23,7 +23,7 @@ def get_multiline_input(prompt=""):
     return "\n".join(lines)
 
 
-def chat_in_console(messages, query):
+def chat_in_console(messages, query, **kwargs):
     token = 0
     response_text = ""
     try:
@@ -40,7 +40,7 @@ def chat_in_console(messages, query):
                 token = (token * 2) + len(input_text.split())
 
             messages.append({'role': 'user', 'content': input_text})
-            response = openai_helper.chat_completion(messages, stream=True)
+            response = openai_helper.chat_completion(messages, stream=True, **kwargs)
 
             with Live(refresh_per_second=6) as live:
                 for chunk in response:

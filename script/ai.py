@@ -38,7 +38,7 @@ def cli_gpt_completion(query):
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     messages = [{'role': 'system', 'content': prompt_helper.unix_prompt_gpt35}]
-    last_message_text = chat_in_console(messages, query)
+    last_message_text = chat_in_console(messages, query, temperature=0)
 
     try:
         command = re.findall(r'```(.*?)```', last_message_text)[0]

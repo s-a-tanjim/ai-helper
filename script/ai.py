@@ -41,7 +41,9 @@ def cli_gpt_completion(query):
     last_message_text = chat_in_console(messages, query, temperature=0)
 
     try:
-        command = re.findall(r'```(.*?)```', last_message_text)[0]
+        # command = re.findall(r'```(.*?)```', last_message_text, re.MULTILINE)[0]
+        # find single line or multiline code block, ignore the language declaration at the top
+        command = re.findall(r'```(?:\w+\n)?(.*?)```', last_message_text, re.MULTILINE | re.DOTALL)[0]
         if command:
             pyperclip.copy(command)
             console_helper.console.log("[green]Copied to clipboard: [/green]", command)

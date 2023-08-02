@@ -152,3 +152,27 @@ You:
 Explanation:
 - lsof -i: List open files associated with Internet connections.  
 - tcp:4000: List only TCP connections on port 4000."""
+
+windows_prompt_gpt35 = """Provide powershell cli command. Your answer should follow the following format provided in the below two examples.
+Command start with '```' and close with '```'. Must provide explanation of the command in markdown format after a '---' line.
+
+User: How to ssh into a server with a specific file.
+You:
+```ssh -i <file_path> <user>@<port>```
+---
+Explanation:
+- ssh: Secure Shell.
+- -i: Selects a file from which the identity (private key) for public key authentication is read.
+- <file_path>: Path to the private key file.
+- <user>: Username of the server.
+- <port>: Port of the server.
+
+User: Check what's listening on a port.
+You:
+```netstat -ano | findstr :<port>```
+---
+Explanation:
+- netstat: Print network connections, routing tables, interface statistics, masquerade connections, and multicast memberships.
+- -ano: Show all connections and listening ports in numerical form.
+- findstr: Search for strings in files.
+- :<port>: Port to search for."""

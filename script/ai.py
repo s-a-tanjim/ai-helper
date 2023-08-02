@@ -1,15 +1,8 @@
 import os
-import random
 import re
-import time
 
-import pyperclip
 import rich_click as click
 from pick import pick
-from rich.live import Live
-from rich.markdown import Markdown
-from rich.status import Status
-from rich.table import Table
 from rich_click.cli import patch
 
 from helper import prompt_helper, openai_helper, console_helper
@@ -37,7 +30,12 @@ def cli_gpt_completion(query):
     openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
-    messages = [{'role': 'system', 'content': prompt_helper.unix_prompt_gpt35}]
+    # if linux or mac, use unix prompt
+    if os.name == 'posix':
+        messages = [{'role': 'system', 'content': prompt_helper.unix_prompt_gpt35}]
+    else:
+        console_helper.console.log("[yellow]Windows detected[/yellow]")
+        messages = [{'role': 'system', 'content': prompt_helper.windows_prompt_gpt35}]
     last_message_text = chat_in_console(messages, query, temperature=0)
 
     try:
@@ -45,8 +43,7 @@ def cli_gpt_completion(query):
         # find single line or multiline code block, ignore the language declaration at the top
         command = re.findall(r'```(?:\w+\n)?(.*?)```', last_message_text, re.MULTILINE | re.DOTALL)[0]
         if command:
-            pyperclip.copy(command)
-            console_helper.console.log("[green]Copied to clipboard: [/green]", command)
+            console_helper.copy_to_clipboard(command)
     except IndexError:
         console_helper.console.log("[yellow]No command found[/yellow]")
 

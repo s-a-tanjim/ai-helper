@@ -1,3 +1,4 @@
+import os
 import sys
 
 from rich.console import Console
@@ -73,3 +74,16 @@ def chat_in_console(messages, query, **kwargs):
         pass
 
     return response_text
+
+
+def copy_to_clipboard(text):
+    import pyperclip
+    # noinspection PyBroadException
+    try:
+        pyperclip.copy(text)
+    except:
+        if os.name == 'posix':
+            os.system(f'echo "{text}" | xclip -selection clipboard')
+        else:
+            os.system(f'echo "{text}" | clip')
+    console.log("[green]Copied to clipboard: [/green]", text)

@@ -77,17 +77,18 @@ def complete(prompt: str, stop_sequences: list = None):
     )
 
 
-def cost(total_tokens):
+def cost(total_input_tokens: int, total_output_tokens: int):
     model_rate = {
-        "ada": 0.0004,
-        "babbage": 0.0005,
-        "curie": 0.002,
-        "davinci": 0.02,
-        "gpt-3.5-turbo": 0.002,
-        "gpt-3.5-turbo-16k": 0.004,
+
+        "gpt-3.5-turbo": {'input': 0.0015, 'output': 0.002},
+        "gpt-3.5-turbo-16k": {'input': 0.003, 'output': 0.004},
+        "gpt-4": {'input': 0.03, 'output': 0.06},
     }.get(config.model, 0)
 
-    return round(model_rate * (total_tokens / 1000), 4)
+    return round(
+        (total_input_tokens * model_rate['input'] / 1000) +
+        (total_output_tokens * model_rate['output'] / 1000)
+        , 4)
 
 
 def chat_completion(messages: list, **kwargs):

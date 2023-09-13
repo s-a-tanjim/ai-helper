@@ -4,18 +4,22 @@ import sys
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
+from rich.padding import Padding
 from rich.prompt import Prompt
 
 from helper import openai_helper
 
 console = Console()
 
+input_token = 0
+response_token = 0
+
 
 def get_multiline_input(prompt=""):
     lines = []
 
     while True:
-        line = Prompt.ask(f"\r[b]{prompt}[/b]")
+        line = Prompt.ask(f"\r[b]  {prompt}[/b]")
         if not line:
             sys.stdout.write("\033[F")
             break
@@ -25,10 +29,10 @@ def get_multiline_input(prompt=""):
 
 
 def chat_in_console(messages, query, **kwargs):
-    token = 0
-    response_text = ""
+    global input_token, response_token
     try:
         while True:
+            response_text = ""
             if query:
                 input_text = " ".join(query)
                 query = None
@@ -37,8 +41,7 @@ def chat_in_console(messages, query, **kwargs):
                 if not input_text:
                     return response_text
 
-                response_text = ""
-                token = (token * 2) + len(input_text.split())
+            input_token += len(input_text.split())
 
             messages.append({'role': 'user', 'content': input_text})
             response = openai_helper.chat_completion(messages, stream=True, **kwargs)
@@ -48,32 +51,38 @@ def chat_in_console(messages, query, **kwargs):
                     for choice in chunk.choices:
 
                         if choice.finish_reason == 'stop':
-                            live.update(Markdown('**AI:** ' + response_text))
+                            live.update(Padding(Markdown('**AI:** ' + response_text), (1, 2, 2, 2)))
                             break
 
                         if choice.delta.content:
                             response_text += choice.delta.content
-                            token += 1
+                            response_token += len(choice.delta.content.split())
 
-                        live.update(Markdown(
+                        live.update(Padding(Markdown(
                             '**AI:** ' +
                             response_text +
+                            "\n\n---" +
+                            f"\nInput: {input_token:<10} "
+                            f"Output: {response_token:<10} "
+                            f"Cost: {openai_helper.cost(input_token, response_token):<10.4f}"
                             "\n\n---"
-                            f"\nResponse Tokens: {token}"
-                            f"\nCost: {openai_helper.cost(token)}"
-                            "\n\n---"
-                        ))
+                        ), (1, 2, 2, 2)))
 
             messages.append({'role': 'system', 'content': response_text})
-            console.print(Markdown('---'))
-            console.log("Response Tokens: ", token)
-            console.log("Cost: ", openai_helper.cost(token))
-            console.print(Markdown('---'))
+
+            # print gray horizontal line
+            console.rule(
+                f"[dim]Model[/]: {openai_helper.config.model}    "
+                f"[dim]Input[/]: {input_token:<6}"
+                f"[dim]Output[/]: {response_token:<6}"
+                f"[dim]Total[/]: {input_token + response_token:<6}"
+                f"[dim]Cost[/]: {openai_helper.cost(input_token, response_token):<.4f}",
+            )
 
     except KeyboardInterrupt:
         pass
 
-    return response_text
+    return
 
 
 def copy_to_clipboard(text):

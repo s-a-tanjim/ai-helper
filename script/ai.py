@@ -27,7 +27,6 @@ def select_model():
 @click.command('cli', help="Generates cli command using GPT-3")
 @click.argument('query', nargs=-1)
 def cli_gpt_completion(query):
-    openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     # if linux or mac, use unix prompt
@@ -51,7 +50,6 @@ def cli_gpt_completion(query):
 @click.command('gr', help="Grammar")
 @click.argument('query', nargs=-1)
 def gr_completion(query):
-    openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     messages = [{'role': 'system', 'content': prompt_helper.grammer_system_prompt}]
@@ -61,7 +59,6 @@ def gr_completion(query):
 @click.command('assessment', help="Guess assessment hours")
 @click.argument('query', nargs=-1)
 def assessment_completion(query):
-    openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     messages = [
@@ -74,7 +71,6 @@ def assessment_completion(query):
 @click.command('chat', help="Chat with GPT-3")
 @click.argument('query', nargs=-1)
 def chat(query):
-    openai_helper.config.model = 'gpt-3.5-turbo'
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     messages = [

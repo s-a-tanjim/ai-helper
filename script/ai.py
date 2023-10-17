@@ -27,21 +27,21 @@ def select_model():
 @click.command('cli', help="Generates cli command using GPT-3")
 @click.argument('query', nargs=-1)
 @click.option('--model', '-m', default="gpt-3.5-turbo", help="Model to use")
-def cli_gpt_completion(query, model):
+@click.option('--long', '-l', is_flag=True, help="provides additional information")
+def cli_gpt_completion(query, model, long):
     openai_helper.set_model(model)
     console_helper.console.log("Model: ", openai_helper.config.model)
 
-    # if linux or mac, use unix prompt
     if os.name == 'posix':
-        messages = [{'role': 'system', 'content': prompt_helper.unix_prompt_gpt35}]
+        prompt_text = prompt_helper.unix_prompt_gpt35 if long else prompt_helper.unix_prompt_gpt35_short
     else:
         console_helper.console.log("[yellow]Windows detected[/yellow]")
-        messages = [{'role': 'system', 'content': prompt_helper.windows_prompt_gpt35}]
+        prompt_text = prompt_helper.windows_prompt_gpt35 if long else prompt_helper.windows_prompt_gpt35_short
+
+    messages = [{'role': 'system', 'content': prompt_text}]
     last_message_text = chat_in_console(messages, query, temperature=0)
 
     try:
-        # command = re.findall(r'```(.*?)```', last_message_text, re.MULTILINE)[0]
-        # find single line or multiline code block, ignore the language declaration at the top
         command = re.findall(r'```(?:\w+\n)?(.*?)```', last_message_text, re.MULTILINE | re.DOTALL)[0]
         if command:
             console_helper.copy_to_clipboard(command)

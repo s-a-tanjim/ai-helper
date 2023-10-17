@@ -30,6 +30,8 @@ def get_multiline_input(prompt=""):
 
 def chat_in_console(messages, query, **kwargs):
     global input_token, response_token
+    response_text = ""
+
     try:
         while True:
             response_text = ""
@@ -78,13 +80,10 @@ def chat_in_console(messages, query, **kwargs):
                 f"[dim]Total[/]: {input_token + response_token:<6}"
                 f"[dim]Cost[/]: {openai_helper.cost(input_token, response_token):<.4f}",
             )
-
-            return response_text
-
     except KeyboardInterrupt:
         pass
 
-    return
+    return response_text
 
 
 def copy_to_clipboard(text):

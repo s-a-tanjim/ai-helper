@@ -153,6 +153,22 @@ Explanation:
 - lsof -i: List open files associated with Internet connections.  
 - tcp:4000: List only TCP connections on port 4000."""
 
+unix_prompt_gpt35_short = """Provide only cli command. Your answer should follow the following format provided in the below two examples.
+Command start with '```' and close with '```'.
+
+User: get into a docker container.
+You:
+```docker exec -it mongodb```
+
+User: Check what's listening on a port.
+You:
+```lsof -i tcp:4000```
+
+User: How to ssh into a server with a specific file.
+You:
+```ssh -i <file_path> <user>@<port>```
+"""
+
 windows_prompt_gpt35 = """Provide powershell cli command. Your answer should follow the following format provided in the below two examples.
 Command start with '```' and close with '```'. Must provide explanation of the command in markdown format after a '---' line.
 
@@ -176,3 +192,15 @@ Explanation:
 - -ano: Show all connections and listening ports in numerical form.
 - findstr: Search for strings in files.
 - :<port>: Port to search for."""
+
+windows_prompt_gpt35_short = """Provide only powershell cli command. Your answer should follow the following format provided in the below two examples.
+Command start with '```' and close with '```'.
+
+User: How to ssh into a server with a specific file.
+You:
+```ssh -i <file_path> <user>@<port>```
+
+User: Check what's listening on a port.
+You:
+```netstat -ano | findstr :<port>```
+"""

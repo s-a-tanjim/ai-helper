@@ -79,6 +79,8 @@ def chat_in_console(messages, query, **kwargs):
                 f"[dim]Cost[/]: {openai_helper.cost(input_token, response_token):<.4f}",
             )
 
+            return response_text
+
     except KeyboardInterrupt:
         pass
 
@@ -89,7 +91,7 @@ def copy_to_clipboard(text):
     import pyperclip
     # noinspection PyBroadException
     try:
-        pyperclip.copy(text)
+        pyperclip.copy(text.strip())
     except:
         if os.name == 'posix':
             os.system(f'echo "{text}" | xclip -selection clipboard')

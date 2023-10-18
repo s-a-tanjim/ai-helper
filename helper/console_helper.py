@@ -34,7 +34,6 @@ def chat_in_console(messages, query, **kwargs):
 
     try:
         while True:
-            response_text = ""
             if query:
                 input_text = " ".join(query)
                 query = None
@@ -43,6 +42,7 @@ def chat_in_console(messages, query, **kwargs):
                 if not input_text:
                     return response_text
 
+            response_text = ""
             input_token += len(input_text.split())
 
             messages.append({'role': 'user', 'content': input_text})
@@ -83,6 +83,7 @@ def chat_in_console(messages, query, **kwargs):
     except KeyboardInterrupt:
         pass
 
+    print('response_text', response_text)
     return response_text
 
 

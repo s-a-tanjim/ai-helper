@@ -97,3 +97,7 @@ def chat_completion(messages: list, **kwargs):
         messages=messages,
         **kwargs
     )
+
+
+def get_model_details():
+    return openai.Model.retrieve(config.model)

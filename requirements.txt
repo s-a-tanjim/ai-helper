@@ -1,6 +1,6 @@
-openai~=0.27.8
-click
-rich
-rich_click
+openai==1.1.1
+click==8.1.7
+rich==13.6.0
+rich_click==1.7.1
 pick~=2.2.0
 pyperclip

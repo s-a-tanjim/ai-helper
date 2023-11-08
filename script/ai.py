@@ -18,10 +18,14 @@ def cli():
 
 @click.command('model', help="Select a model")
 def select_model():
+    from pprint import pprint
+
     print("Current model:", openai_helper.config.model)
     models = openai_helper.get_models()
     option, index = pick([model.id for model in models.data], "Select a model")
     openai_helper.set_model(option)
+    model = openai_helper.get_model_details()
+    pprint(model)
 
 
 @click.command('cli', help="Generates cli command using GPT-3")

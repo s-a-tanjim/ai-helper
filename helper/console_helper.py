@@ -98,3 +98,16 @@ def copy_to_clipboard(text):
         else:
             os.system(f'echo "{text}" | clip')
     console.log("[green]Copied to clipboard: [/green]", text)
+
+
+def get_clipboard_text():
+    import pyperclip
+
+    # noinspection PyBroadException
+    try:
+        return pyperclip.paste()
+    except:
+        if os.name == 'posix':
+            return os.popen('xclip -selection clipboard -o').read()
+        else:
+            return os.popen('clip -o').read()

@@ -49,7 +49,7 @@ except (FileNotFoundError, TypeError):
 
 
 def get_models():
-    return openai.Model.list()
+    return openai.models.list()
 
 
 def set_model(model_name):
@@ -83,6 +83,7 @@ def cost(total_input_tokens: int, total_output_tokens: int):
         "gpt-3.5-turbo": {'input': 0.0015, 'output': 0.002},
         "gpt-3.5-turbo-16k": {'input': 0.003, 'output': 0.004},
         "gpt-4": {'input': 0.03, 'output': 0.06},
+        'gpt-4-1106-preview': {'input': 0.01, 'output': 0.03},
     }.get(config.model, 0)
 
     return round(
@@ -92,7 +93,7 @@ def cost(total_input_tokens: int, total_output_tokens: int):
 
 
 def chat_completion(messages: list, **kwargs):
-    return openai.ChatCompletion.create(
+    return openai.chat.completions.create(
         model=config.model,
         messages=messages,
         **kwargs
@@ -100,4 +101,4 @@ def chat_completion(messages: list, **kwargs):
 
 
 def get_model_details():
-    return openai.Model.retrieve(config.model)
+    return openai.models.retrieve(config.model)

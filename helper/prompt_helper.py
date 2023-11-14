@@ -1,3 +1,5 @@
+from datetime import datetime
+
 powershell_prompt = """Correctly answer the asked question. Return 'Sorry, Can't answer that.' if the question isn't related to technology.
 
 Q - get into a docker container.
@@ -77,11 +79,22 @@ A - Sorry, Can't answer that.
 
 Q - """
 
-grammer_system_prompt = """Check the following text for spelling and grammar errors.
-Highlight the error and also provide the correct sentence in a new line.
-Provide all responses in markdown format.
-Also provide a more concise and improved version of the sentence.
-Each section,Errors,Corrected,Improved should be separated by markdown horizontal line."""
+grammer_system_prompt = """**Prompt for Grammar and Spelling Review with Variations:**
+
+- **Objective:** Carefully inspect the text for any spelling and grammatical errors. Use markdown formatting to highlight each identified mistake.
+
+- **Response Format:** Organize your corrections in markdown. Begin with a "Errors" section listing the mistakes, followed by "Corrected Sentences" with the corrected text. Finish with "Improved Sentences" that offer more streamlined and polished versions of the corrected sentences.
+
+- **Style Consistency:** When rewriting, aim to mirror the original writing style of the text provided.
+
+- **Section Organization:** Employ markdown horizontal lines to demarcate each section for easy readability.
+
+- **Variations Request:** After presenting the corrected and improved sentences, provide two alternative versions of the entire message, each with a different structure or tone, while maintaining the original purpose and meaning.
+
+---
+
+Please adhere to the above guidelines to produce a structured, precise, and comprehensive response, along with creative variations of the corrected text.
+"""
 
 assessment = """You are required to provide a time estimate based on the assessment. Follow the below format.
 
@@ -167,6 +180,27 @@ You:
 User: How to ssh into a server with a specific file.
 You:
 ```ssh -i <file_path> <user>@<port>```
+"""
+
+summary_prompt = f"""**Prompt for Prioritized Text Summarization with Emphasis on Time-Sensitive Requests to Anwar:**
+
+- **Today's Date:** {datetime.now().strftime("%m/%d/%Y")}
+
+- **Objective:** Efficiently distill the provided text into a summary, emphasizing any requests made to an individual named "Anwar" that are time-sensitive. Reference these requests in terms of the number of days ago they were made or the deadline within which Anwar must respond.
+
+- **Response Format:** Start with a section titled "Urgent Requests to Anwar," using markdown to distinguish recent or upcoming deadlines (e.g., '**3 days ago**' or '**due in 2 days**'). Then, compile the "General Summary" with bullet points and simplified language for easy comprehension.
+
+- **Language Clarity:** Utilize plain language and avoid jargon or complex sentence structures. Aim for brevity and clarity to ensure that the summary is easily digestible.
+
+- **Readability Focus:** Craft a coherent narrative that provides a clear overview of the conversation, prioritizing the flow and natural progression of topics.
+
+- **Highlighting Urgency:** Apply markdown formatting like **bold** or *italics* to emphasize the time frame of each request made to Anwar, ensuring they are immediately noticeable.
+
+- **Conversation Breakdown:** For the broader conversation, use subheadings to segment different topics or speakers, and provide a bulleted list of key points discussed under each section for a structured and organized summary.
+
+---
+
+By following these guidelines, summarize the content in a way that highlights time-sensitive interactions with Anwar and makes it easier to understand the breadth of the conversation, especially for those who need to catch up quickly.
 """
 
 windows_prompt_gpt35 = """Provide powershell cli command. Your answer should follow the following format provided in the below two examples.

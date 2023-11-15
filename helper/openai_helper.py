@@ -61,27 +61,12 @@ if __name__ == '__main__':
     pprint(get_models())
 
 
-def complete(prompt: str, stop_sequences: list = None):
-    if stop_sequences is None:
-        stop_sequences = ["\n\n"]
-
-    return openai.Completion.create(
-        engine=config.model,
-        prompt=prompt,
-        max_tokens=400,
-        temperature=0.7,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
-        stop=stop_sequences
-    )
-
-
 def cost(total_input_tokens: int, total_output_tokens: int):
     model_rate = {
 
         "gpt-3.5-turbo": {'input': 0.0015, 'output': 0.002},
         "gpt-3.5-turbo-16k": {'input': 0.003, 'output': 0.004},
+        'gpt-3.5-turbo-1106': {'input': 0.001, 'output': 0.002},
         "gpt-4": {'input': 0.03, 'output': 0.06},
         'gpt-4-1106-preview': {'input': 0.01, 'output': 0.03},
     }.get(config.model, 0)

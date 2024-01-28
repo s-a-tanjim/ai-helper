@@ -82,7 +82,10 @@ def gr_completion(query, model):
     console_helper.console.log("Model: ", openai_helper.config.model)
 
     messages = [{'role': 'system', 'content': prompt_helper.grammer_system_prompt}]
-    chat_in_console(messages, query)
+    if openai_helper.config.provider == "ollama":
+        chat_in_console_ollama2(messages, query)
+    else:
+        chat_in_console(messages, query)
 
 
 @click.command('assessment', help="Guess assessment hours")
@@ -97,7 +100,10 @@ def assessment_completion(query, model):
         {'role': 'system', 'content': prompt_helper.assessment},
     ]
 
-    chat_in_console(messages, query)
+    if openai_helper.config.provider == "ollama":
+        chat_in_console_ollama2(messages, query)
+    else:
+        chat_in_console(messages, query)
 
 
 @click.command('chat', help="Chat with GPT-3")
@@ -132,7 +138,11 @@ def summary(query, model):
     if not query:
         # get from clipboard
         query = console_helper.get_clipboard_text()
-    chat_in_console(messages, query)
+
+    if openai_helper.config.provider == "ollama":
+        chat_in_console_ollama2(messages, query)
+    else:
+        chat_in_console(messages, query)
 
 
 cli.add_command(select_provider)

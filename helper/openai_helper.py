@@ -1,6 +1,7 @@
 import os
 from pprint import pprint
 
+import ollama
 import openai
 
 API_KEY_FILE = os.path.expanduser("~/.openai_api_key")
@@ -9,11 +10,13 @@ CONFIG_FILE = os.path.expanduser("~/.openai_config")
 
 class Config:
     model = "davinci"
+    provider = "openai"
 
     # to dict
     def __dict__(self):
         return {
-            "model": self.model
+            "model": self.model,
+            'provider': self.provider
         }
 
     # set from dict
@@ -22,6 +25,7 @@ class Config:
             with open(CONFIG_FILE) as f:
                 c = eval(f.read())
                 self.model = c["model"]
+                self.provider = c.get("provider", "openai")
 
     def save(self):
         with open(CONFIG_FILE, "w") as f:
@@ -48,8 +52,21 @@ except (FileNotFoundError, TypeError):
     openai.api_key = save_api_key
 
 
+def set_provider(provider):
+    config.provider = provider
+    config.save()
+
+
 def get_models():
-    return openai.models.list()
+    if config.provider == "ollama":
+        models = ollama.list()['models']
+        # convert each dict to object to a vritual class
+        for i in range(len(models)):
+            models[i] = type('obj', (object,), models[i])
+            models[i].id = models[i].name
+        return models
+    elif config.provider == "openai":
+        return openai.models.list()
 
 
 def set_model(model_name):
@@ -62,8 +79,10 @@ if __name__ == '__main__':
 
 
 def cost(total_input_tokens: int, total_output_tokens: int):
-    model_rate = {
+    if config.provider == "ollama":
+        return 0
 
+    model_rate = {
         "gpt-3.5-turbo": {'input': 0.0015, 'output': 0.002},
         "gpt-3.5-turbo-16k": {'input': 0.003, 'output': 0.004},
         'gpt-3.5-turbo-1106': {'input': 0.001, 'output': 0.002},
@@ -78,12 +97,20 @@ def cost(total_input_tokens: int, total_output_tokens: int):
 
 
 def chat_completion(messages: list, **kwargs):
-    return openai.chat.completions.create(
-        model=config.model,
-        messages=messages,
-        **kwargs
-    )
+    if config.provider == "ollama":
+        return ollama.chat(
+            model=config.model,
+            messages=messages)
+    elif config.provider == "openai":
+        return openai.chat.completions.create(
+            model=config.model,
+            messages=messages,
+            **kwargs
+        )
 
 
 def get_model_details():
-    return openai.models.retrieve(config.model)
+    if config.provider == "ollama":
+        return ollama.show(config.model)
+    elif config.provider == "openai":
+        return openai.models.retrieve(config.model)

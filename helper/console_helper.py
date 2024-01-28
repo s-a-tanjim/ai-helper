@@ -1,6 +1,7 @@
 import os
 import sys
 
+import ollama
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -71,6 +72,68 @@ def chat_in_console(messages, query, **kwargs):
                         ), (1, 2, 2, 2)))
 
             messages.append({'role': 'system', 'content': response_text})
+
+            # print gray horizontal line
+            console.rule(
+                f"[dim]Model[/]: {openai_helper.config.model}    "
+                f"[dim]Input[/]: {input_token:<6}"
+                f"[dim]Output[/]: {response_token:<6}"
+                f"[dim]Total[/]: {input_token + response_token:<6}"
+                f"[dim]Cost[/]: {openai_helper.cost(input_token, response_token):<.4f}",
+            )
+    except KeyboardInterrupt:
+        pass
+
+    print('response_text', response_text)
+    return response_text
+
+
+def chat_in_console_ollama2(messages, query, **kwargs):
+    global input_token, response_token
+    response_text = ""
+
+    try:
+        while True:
+            if query:
+                input_text = " ".join(query)
+                query = None
+            else:
+                input_text = get_multiline_input('You')
+                if not input_text:
+                    return response_text
+
+            response_text = ""
+            input_token += len(input_text.split())
+
+            messages.append({'role': 'user', 'content': input_text})
+            response = ollama.chat(
+                model=openai_helper.config.model,
+                messages=messages,
+                stream=True,
+            )
+
+            with Live(refresh_per_second=6) as live:
+                for chunk in response:
+                    # print('chunk', chunk)
+                    if chunk['done']:
+                        live.update(Padding(Markdown('**AI:** ' + response_text), (1, 2, 2, 2)))
+                        break
+
+                    if chunk['message']['content']:
+                        response_text += chunk['message']['content']
+                        response_token += len(chunk['message']['content'].split())
+
+                    live.update(Padding(Markdown(
+                        '**AI:** ' +
+                        response_text +
+                        "\n\n---" +
+                        f"\nInput: {input_token:<10} "
+                        f"Output: {response_token:<10} "
+                        f"Cost: {openai_helper.cost(input_token, response_token):<10.4f}"
+                        "\n\n---"
+                    ), (1, 2, 2, 2)))
+
+            messages.append({'role': 'assistant', 'content': response_text})
 
             # print gray horizontal line
             console.rule(

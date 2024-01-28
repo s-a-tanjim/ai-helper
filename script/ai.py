@@ -6,7 +6,7 @@ from pick import pick
 from rich_click.cli import patch
 
 from helper import prompt_helper, openai_helper, console_helper
-from helper.console_helper import chat_in_console
+from helper.console_helper import chat_in_console, chat_in_console_ollama2
 
 patch()
 
@@ -16,13 +16,27 @@ def cli():
     pass
 
 
+@click.command('provider', help="Select a provider")
+def select_provider():
+    from pprint import pprint
+
+    try:
+        print("Current provider:", openai_helper.config.provider)
+    except AttributeError:
+        print("Current provider: openai")
+
+    providers = ['openai', 'ollama']
+    option, index = pick([provider for provider in providers], title="Select a provider")
+    openai_helper.set_provider(option)
+
+
 @click.command('model', help="Select a model")
 def select_model():
     from pprint import pprint
 
     print("Current model:", openai_helper.config.model)
     models = list(openai_helper.get_models())
-    models.sort(key=lambda x: x.id)
+    models.sort(key=lambda x: x.name)
     option, index = pick([model.id for model in models], title="Select a model")
     openai_helper.set_model(option)
     model = openai_helper.get_model_details()
@@ -45,7 +59,11 @@ def cli_gpt_completion(query, model, long):
         prompt_text = prompt_helper.windows_prompt_gpt35 if long else prompt_helper.windows_prompt_gpt35_short
 
     messages = [{'role': 'system', 'content': prompt_text}]
-    last_message_text = chat_in_console(messages, query, temperature=0)
+
+    if openai_helper.config.provider == "ollama":
+        last_message_text = chat_in_console_ollama2(messages, query)
+    elif openai_helper.config.provider == "openai":
+        last_message_text = chat_in_console(messages, query, temperature=0)
 
     try:
         command = re.findall(r'```(?:\w+\n)?(.*?)```', last_message_text, re.MULTILINE | re.DOTALL)[0]
@@ -94,7 +112,10 @@ def chat(query, model):
         {'role': 'system', 'content': 'You are a helpful AI assistant. Respond always with Markdown.'},
     ]
 
-    chat_in_console(messages, query)
+    if openai_helper.config.provider == "ollama":
+        chat_in_console_ollama2(messages, query)
+    else:
+        chat_in_console(messages, query)
 
 
 @click.command('summary', help="Summarize text")
@@ -114,6 +135,7 @@ def summary(query, model):
     chat_in_console(messages, query)
 
 
+cli.add_command(select_provider)
 cli.add_command(select_model)
 cli.add_command(gr_completion)
 cli.add_command(cli_gpt_completion)

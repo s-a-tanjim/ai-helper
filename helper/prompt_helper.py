@@ -1,3 +1,5 @@
+import os
+import subprocess
 from datetime import datetime
 
 powershell_prompt = """Correctly answer the asked question. Return 'Sorry, Can't answer that.' if the question isn't related to technology.
@@ -238,3 +240,17 @@ User: Check what's listening on a port.
 You:
 ```netstat -ano | findstr :<port>```
 """
+
+commit_prompt_template = "Rewrite the following Git diff into a concise and informative commit message within 75 characters preferably less, using the '-' to indicate removed lines and '+' for added lines. Use unchanged lines for context only:\n"
+
+commit_prompt_instruction = "\n\nProvide a short and concise imperative single-line commit message that briefly describes the changes made in this diff."
+
+
+def get_code_diff():
+    # get current code diff using git diff
+
+    response = subprocess.check_output(
+        "git diff", shell=True, text=True
+    )
+
+    return response

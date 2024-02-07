@@ -88,7 +88,7 @@ def cost(total_input_tokens: int, total_output_tokens: int):
         'gpt-3.5-turbo-1106': {'input': 0.001, 'output': 0.002},
         "gpt-4": {'input': 0.03, 'output': 0.06},
         'gpt-4-1106-preview': {'input': 0.01, 'output': 0.03},
-    }.get(config.model, 0)
+    }.get(config.model, {'input': 0.0, 'output': 0.0})
 
     return round(
         (total_input_tokens * model_rate['input'] / 1000) +

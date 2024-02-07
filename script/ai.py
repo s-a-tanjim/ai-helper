@@ -145,6 +145,29 @@ def summary(query, model):
         chat_in_console(messages, query)
 
 
+@click.command('commit', help="Auto generate commit message & does the commit")
+@click.option('--model', '-m', help="Model to use")
+def commit(model):
+    if model:
+        openai_helper.set_model(model)
+    console_helper.console.log("Model: ", openai_helper.config.model)
+
+    messages = [
+        {'role': 'system', 'content': prompt_helper.commit_prompt_template},
+    ]
+
+    code_diff = prompt_helper.get_code_diff()
+
+    if openai_helper.config.provider == "ollama":
+        commit_message = chat_in_console_ollama2(messages, [code_diff + prompt_helper.commit_prompt_instruction])
+    else:
+        commit_message = chat_in_console(messages, [code_diff + prompt_helper.commit_prompt_instruction])
+
+    commit_message = commit_message.strip()
+    console_helper.console.log("Commit message:", commit_message)
+    os.system(f'git commit -m "{commit_message}"')
+
+
 cli.add_command(select_provider)
 cli.add_command(select_model)
 cli.add_command(gr_completion)
@@ -152,6 +175,7 @@ cli.add_command(cli_gpt_completion)
 cli.add_command(assessment_completion)
 cli.add_command(chat)
 cli.add_command(summary)
+cli.add_command(commit)
 
 if __name__ == '__main__':
     cli()

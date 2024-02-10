@@ -165,7 +165,8 @@ def commit(model):
 
     commit_message = commit_message.strip()
     console_helper.console.log("Commit message:", commit_message)
-    os.system(f'git commit -m "{commit_message}"')
+    if commit_message and click.confirm("Do you want to commit?"):
+        os.system(f'git commit -m "{commit_message}"')
 
 
 cli.add_command(select_provider)

@@ -250,7 +250,7 @@ def get_code_diff():
     # get current code diff using git diff
 
     response = subprocess.check_output(
-        "git diff", shell=True, text=True
+        "git diff --cached", shell=True, text=True
     )
 
     return response

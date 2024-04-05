@@ -13,6 +13,7 @@ setup(
     entry_points={
         'console_scripts': [
             'ai = script.ai:cli',
+
         ]
     }
 )

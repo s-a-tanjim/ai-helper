@@ -18,7 +18,6 @@ def cli():
 
 @click.command('provider', help="Select a provider")
 def select_provider():
-    from pprint import pprint
 
     try:
         print("Current provider:", openai_helper.config.provider)

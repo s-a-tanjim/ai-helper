@@ -1,14 +1,12 @@
 import os
 import re
 
+import inquirer
 import rich_click as click
-from pick import pick
-from rich_click.cli import patch
+from inquirer import prompt
 
 from helper import prompt_helper, openai_helper, console_helper
 from helper.console_helper import chat_in_console, chat_in_console_ollama2
-
-patch()
 
 
 @click.group()
@@ -18,15 +16,20 @@ def cli():
 
 @click.command('provider', help="Select a provider")
 def select_provider():
-
     try:
         print("Current provider:", openai_helper.config.provider)
     except AttributeError:
         print("Current provider: openai")
 
     providers = ['openai', 'ollama']
-    option, index = pick([provider for provider in providers], title="Select a provider")
-    openai_helper.set_provider(option)
+    questions = [
+        inquirer.List('provider',
+                      message="Select a provider",
+                      choices=providers,
+                      )
+    ]
+    answers = prompt(questions)
+    openai_helper.set_provider(answers['provider'])
 
 
 @click.command('model', help="Select a model")
@@ -35,9 +38,21 @@ def select_model():
 
     print("Current model:", openai_helper.config.model)
     models = list(openai_helper.get_models())
-    models.sort(key=lambda x: x.name)
-    option, index = pick([model.id for model in models], title="Select a model")
-    openai_helper.set_model(option)
+    try:
+        models.sort(key=lambda x: x.name)
+        mode_names = [model.name for model in models]
+    except AttributeError:
+        models.sort(key=lambda x: x.id)
+        mode_names = [model.id for model in models]
+
+    questions = [
+        inquirer.List('model',
+                      message="Select a model",
+                      choices=mode_names,
+                      )
+    ]
+    answers = prompt(questions)
+    openai_helper.set_model(answers['model'])
     model = openai_helper.get_model_details()
     pprint(model)
 

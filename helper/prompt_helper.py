@@ -1,4 +1,3 @@
-import os
 import subprocess
 from datetime import datetime
 
@@ -241,9 +240,9 @@ You:
 ```netstat -ano | findstr :<port>```
 """
 
-commit_prompt_template = "Rewrite the following Git diff into a concise and informative commit message within 75 characters preferably less, using the '-' to indicate removed lines and '+' for added lines. Use unchanged lines for context only:\n"
+commit_prompt_template = "Rewrite the following Git diff into a concise and informative single line commit message, using the '-' to indicate removed lines and '+' for added lines. Use unchanged lines for context only:\n"
 
-commit_prompt_instruction = "\n\nProvide a short and concise imperative single-line commit message that briefly describes the changes made in this diff."
+commit_prompt_instruction = "\n\nProvide a short and concise imperative single-line commit message that describes all the changes made in this diff."
 
 
 def get_code_diff():

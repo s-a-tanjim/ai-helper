@@ -41,6 +41,6 @@ global_config = Config(
     os.path.expanduser("~/.ai_config"),
     {
         "provider": "openai",
-        "providers": ["openai", "ollama"],
+        "providers": ["openai", "ollama", "google"]
     }
 )

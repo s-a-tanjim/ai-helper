@@ -43,6 +43,8 @@ def select_provider():
 @add_common_options
 def select_model(provider, model):
     global_config = Config.global_config
+    provider = provider or global_config.provider
+
     chat_provider = get_chat_provider(global_config.provider)
     console.log("Current provider:", global_config.provider, "Current model:", chat_provider.get_model())
 

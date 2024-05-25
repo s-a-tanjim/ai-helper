@@ -1,4 +1,4 @@
-![alt text](https://github.com/anwar3606/openai-helper/blob/master/images/demo.gif)
+![alt text](https://github.com/anwar3606/ai-helper/blob/master/images/demo.gif)
 
 # AI CLI
 
@@ -49,7 +49,7 @@ ai puppy -p google -m gemini-1.5-pro
 ## Installation
 
 ```bash
-git clone 
-cd ai-cli
+git clone https://github.com/anwar3606/ai-helper
+cd ai-helper
 pip install .
 ```

@@ -1,4 +1,4 @@
-![alt text][images/demo.gif]
+![alt text](https://github.com/anwar3606/openai-helper/blob/master/images/demo.gif)
 
 # AI CLI
 

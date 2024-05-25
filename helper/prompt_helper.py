@@ -161,8 +161,8 @@ commit_prompt_instruction = (
 def get_code_diff():
     # get current code diff using git diff
 
-    response = subprocess.check_output(
-        "git diff --cached", shell=True, text=True
+    command_text = subprocess.check_output(
+        "git diff --cached", shell=True, text=False
     )
 
-    return response
+    return command_text.decode("utf-8")

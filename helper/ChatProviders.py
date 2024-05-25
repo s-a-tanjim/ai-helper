@@ -274,8 +274,8 @@ class GoogleChatProvider(ChatProvider):
         }
 
         for model_name, rate in model_rate.items():
-            if self.config.model in model_name:
-                return round(input_tokens * rate['input'] + output_tokens * rate['output'], 4)
+            if model_name in self.config.model:
+                return round(input_tokens * rate['input'] + output_tokens * rate['output'], 5)
 
         console.log('[yellow]Pricing info not found for model[/yellow]')
         return 0.0

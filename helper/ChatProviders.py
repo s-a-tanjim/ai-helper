@@ -8,8 +8,8 @@ from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.prompt import Prompt
 
-from helper import openai_helper
-from helper.openai_helper import Config
+from helper import Config
+from helper.Config import Config
 
 
 class ChatProvider(ABC):
@@ -112,7 +112,7 @@ class OllamaChatProvider(ChatProvider):
         import ollama
         super().__init__()
 
-        self.config = openai_helper.Config(self.CONFIG_FILE)
+        self.config = Config(self.CONFIG_FILE)
         self.client = ollama
 
     def models(self) -> list[str]:
@@ -152,7 +152,7 @@ class OpenAIChatProvider(ChatProvider):
         import openai
         super().__init__()
 
-        self.config = openai_helper.Config(self.CONFIG_FILE)
+        self.config = Config(self.CONFIG_FILE)
         self.client = openai
         self.client.api_key = self._get_api_key()
 

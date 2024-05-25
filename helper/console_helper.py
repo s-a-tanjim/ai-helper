@@ -4,7 +4,7 @@ import sys
 from rich.console import Console
 from rich.prompt import Prompt
 
-from helper import openai_helper
+from helper import Config
 from helper.ChatProviders import get_chat_provider
 
 console = Console()
@@ -50,7 +50,7 @@ def get_multiline_input(prompt=""):
 
 
 def chat_in_console(model, messages, query, **kwargs):
-    chat_provider = get_chat_provider(openai_helper.global_config.provider)
+    chat_provider = get_chat_provider(Config.global_config.provider)
     if model:
         chat_provider.set_model(model)
     console.log(f"Provider: {chat_provider.provider}, Model: {chat_provider.get_model()}")

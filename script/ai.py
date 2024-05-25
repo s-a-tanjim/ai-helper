@@ -5,7 +5,7 @@ import inquirer
 import rich_click as click
 from inquirer import prompt
 
-from helper import prompt_helper, openai_helper, console_helper
+from helper import prompt_helper, Config, console_helper
 from helper.ChatProviders import get_chat_provider
 from helper.console_helper import chat_in_console
 from helper.console_helper import console
@@ -24,7 +24,7 @@ def add_common_options(func):
 
 @cli.command('provider', help="Select a provider")
 def select_provider():
-    global_config = openai_helper.global_config
+    global_config = Config.global_config
     console.log("Current provider:", global_config.provider)
 
     questions = [
@@ -42,7 +42,7 @@ def select_provider():
 @cli.command('model', help="Select a model")
 @add_common_options
 def select_model(provider, model):
-    global_config = openai_helper.global_config
+    global_config = Config.global_config
     chat_provider = get_chat_provider(global_config.provider)
     console.log("Current provider:", global_config.provider, "Current model:", chat_provider.get_model())
 
@@ -56,7 +56,7 @@ def select_model(provider, model):
 
 def set_provider(provider):
     if provider:
-        openai_helper.global_config.provider = provider
+        Config.global_config.provider = provider
 
 
 @cli.command('cli', help="Generates cli command using GPT-3")

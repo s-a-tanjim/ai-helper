@@ -6,12 +6,18 @@ import rich_click as click
 from inquirer import prompt
 
 from helper import prompt_helper, openai_helper, console_helper
-from helper.console_helper import chat_in_console, chat_in_console_ollama2
+from helper.console_helper import chat_in_console
 
 
 @click.group()
 def cli():
     pass
+
+
+def add_common_options(func):
+    func = click.option('--model', '-m', help="Model to use")(func)
+    func = click.option('--provider', '-p', help="Provider to use")(func)
+    return func
 
 
 @cli.command('provider', help="Select a provider")
@@ -23,20 +29,28 @@ def select_provider():
 
     providers = ['openai', 'ollama']
     questions = [
-        inquirer.List('provider',
-                      message="Select a provider",
-                      choices=providers,
-                      )
+        inquirer.List(
+            'provider',
+            message="Select a provider",
+            choices=providers,
+        )
     ]
     answers = prompt(questions)
     openai_helper.set_provider(answers['provider'])
 
 
 @cli.command('model', help="Select a model")
-def select_model():
-    from pprint import pprint
+@add_common_options
+def select_model(provider, model):
+    console_helper.print_current_provider()
 
-    print("Current model:", openai_helper.config.model)
+    if provider and provider != openai_helper.config.provider:
+        openai_helper.set_provider(provider)
+
+    if model:
+        openai_helper.set_model(model)
+        return
+
     models = list(openai_helper.get_models())
     try:
         models.sort(key=lambda x: x.name)
@@ -46,21 +60,15 @@ def select_model():
         mode_names = [model.id for model in models]
 
     questions = [
-        inquirer.List('model',
-                      message="Select a model",
-                      choices=mode_names,
-                      )
+        inquirer.List(
+            'model',
+            message="Select a model",
+            choices=mode_names,
+        )
     ]
     answers = prompt(questions)
     openai_helper.set_model(answers['model'])
     model = openai_helper.get_model_details()
-    pprint(model)
-
-
-def add_common_options(func):
-    func = click.option('--model', '-m', help="Model to use")(func)
-    func = click.option('--provider', '-p', help="Provider to use")(func)
-    return func
 
 
 def set_mode_and_provider(model, provider):
@@ -87,10 +95,7 @@ def cli_gpt_completion(query, long, model, provider):
 
     messages = [{'role': 'system', 'content': prompt_text}]
 
-    if openai_helper.config.provider == "ollama":
-        last_message_text = chat_in_console_ollama2(messages, query)
-    elif openai_helper.config.provider == "openai":
-        last_message_text = chat_in_console(messages, query, temperature=0)
+    last_message_text = chat_in_console(messages, query, temperature=0.0)
 
     try:
         command = re.findall(r'```(?:\w+\n)?(.*?)```', last_message_text, re.MULTILINE | re.DOTALL)[0]
@@ -107,10 +112,7 @@ def gr_completion(query, model, provider):
     set_mode_and_provider(model, provider)
 
     messages = [{'role': 'system', 'content': prompt_helper.grammer_system_prompt}]
-    if openai_helper.config.provider == "ollama":
-        chat_in_console_ollama2(messages, query)
-    else:
-        chat_in_console(messages, query)
+    chat_in_console(messages, query)
 
 
 @cli.command('assessment', help="Guess assessment hours")
@@ -122,11 +124,7 @@ def assessment_completion(query, model, provider):
     messages = [
         {'role': 'system', 'content': prompt_helper.assessment},
     ]
-
-    if openai_helper.config.provider == "ollama":
-        chat_in_console_ollama2(messages, query)
-    else:
-        chat_in_console(messages, query)
+    chat_in_console(messages, query)
 
 
 @cli.command('chat', help="Chat with GPT-3")
@@ -138,11 +136,7 @@ def chat(query, model, provider):
     messages = [
         {'role': 'system', 'content': 'You are a helpful AI assistant. Respond always with Markdown.'},
     ]
-
-    if openai_helper.config.provider == "ollama":
-        chat_in_console_ollama2(messages, query)
-    else:
-        chat_in_console(messages, query)
+    chat_in_console(messages, query)
 
 
 @cli.command('summary', help="Summarize text")
@@ -158,10 +152,7 @@ def summary(query, model, provider):
         # get from clipboard
         query = console_helper.get_clipboard_text()
 
-    if openai_helper.config.provider == "ollama":
-        chat_in_console_ollama2(messages, query)
-    else:
-        chat_in_console(messages, query)
+    chat_in_console(messages, query)
 
 
 @cli.command('commit', help="Auto generate commit message & does the commit")
@@ -175,12 +166,9 @@ def commit(model, provider):
 
     code_diff = prompt_helper.get_code_diff()
 
-    if openai_helper.config.provider == "ollama":
-        commit_message = chat_in_console_ollama2(messages, [code_diff + prompt_helper.commit_prompt_instruction])
-    else:
-        commit_message = chat_in_console(messages, [code_diff + prompt_helper.commit_prompt_instruction])
-
+    commit_message = chat_in_console(messages, [code_diff + prompt_helper.commit_prompt_instruction])
     commit_message = commit_message.strip()
+
     console_helper.console.log("Commit message:", commit_message)
     if commit_message and click.confirm("Do you want to commit?"):
         os.system(f'git commit -m "{commit_message}"')

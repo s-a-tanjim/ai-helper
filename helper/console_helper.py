@@ -1,19 +1,12 @@
-import os
 import sys
 
-import ollama
 from rich.console import Console
-from rich.live import Live
-from rich.markdown import Markdown
-from rich.padding import Padding
 from rich.prompt import Prompt
 
 from helper import openai_helper
+from helper.ChatProviders import OllamaChatProvider, OpenAIChatProvider
 
 console = Console()
-
-input_token = 0
-response_token = 0
 
 
 def get_multiline_input(prompt=""):
@@ -29,142 +22,32 @@ def get_multiline_input(prompt=""):
     return "\n".join(lines)
 
 
+def get_chat_provider(provider):
+    if provider == "ollama":
+        return OllamaChatProvider(openai_helper.config.model)
+    else:
+        return OpenAIChatProvider(openai_helper.config.model)
+
+
 def chat_in_console(messages, query, **kwargs):
-    global input_token, response_token
-    response_text = ""
+    chat_provider = get_chat_provider(openai_helper.config.provider)
 
-    try:
-        while True:
-            if query:
-                input_text = " ".join(query)
-                query = None
-            else:
-                input_text = get_multiline_input('You')
-                if not input_text:
-                    return response_text
-
-            response_text = ""
-            input_token += len(input_text.split())
-
-            messages.append({'role': 'user', 'content': input_text})
-            response = openai_helper.chat_completion(messages, stream=True, **kwargs)
-
-            with Live(refresh_per_second=6) as live:
-                for chunk in response:
-                    for choice in chunk.choices:
-
-                        if choice.finish_reason == 'stop':
-                            live.update(Padding(Markdown('**AI:** ' + response_text), (1, 2, 2, 2)))
-                            break
-
-                        if choice.delta.content:
-                            response_text += choice.delta.content
-                            response_token += len(choice.delta.content.split())
-
-                        live.update(Padding(Markdown(
-                            '**AI:** ' +
-                            response_text +
-                            "\n\n---" +
-                            f"\nInput: {input_token:<10} "
-                            f"Output: {response_token:<10} "
-                            f"Cost: {openai_helper.cost(input_token, response_token):<10.4f}"
-                            "\n\n---"
-                        ), (1, 2, 2, 2)))
-
-            messages.append({'role': 'system', 'content': response_text})
-
-            # print gray horizontal line
-            console.rule(
-                f"[dim]Model[/]: {openai_helper.config.model}    "
-                f"[dim]Input[/]: {input_token:<6}"
-                f"[dim]Output[/]: {response_token:<6}"
-                f"[dim]Total[/]: {input_token + response_token:<6}"
-                f"[dim]Cost[/]: {openai_helper.cost(input_token, response_token):<.4f}",
-            )
-    except KeyboardInterrupt:
-        pass
-
-    print('response_text', response_text)
-    return response_text
-
-
-def chat_in_console_ollama2(messages, query, **kwargs):
-    global input_token, response_token
-    response_text = ""
-
-    try:
-        while True:
-            if query:
-                input_text = " ".join(query)
-                query = None
-            else:
-                input_text = get_multiline_input('You')
-                if not input_text:
-                    return response_text
-
-            response_text = ""
-            input_token += len(input_text.split())
-
-            messages.append({'role': 'user', 'content': input_text})
-            response = ollama.chat(
-                model=openai_helper.config.model,
-                messages=messages,
-                stream=True,
-            )
-
-            with Live(refresh_per_second=6) as live:
-                for chunk in response:
-                    # print('chunk', chunk)
-                    if chunk['done']:
-                        live.update(Padding(Markdown('**AI:** ' + response_text), (1, 2, 2, 2)))
-                        break
-
-                    if chunk['message']['content']:
-                        response_text += chunk['message']['content']
-                        response_token += len(chunk['message']['content'].split())
-
-                    live.update(Padding(Markdown(
-                        '**AI:** ' +
-                        response_text +
-                        "\n\n---" +
-                        f"\nInput: {input_token:<10} "
-                        f"Output: {response_token:<10} "
-                        f"Cost: {openai_helper.cost(input_token, response_token):<10.4f}"
-                        "\n\n---"
-                    ), (1, 2, 2, 2)))
-
-            messages.append({'role': 'assistant', 'content': response_text})
-
-            # print gray horizontal line
-            console.rule(
-                f"[dim]Model[/]: {openai_helper.config.model}    "
-                f"[dim]Input[/]: {input_token:<6}"
-                f"[dim]Output[/]: {response_token:<6}"
-                f"[dim]Total[/]: {input_token + response_token:<6}"
-                f"[dim]Cost[/]: {openai_helper.cost(input_token, response_token):<.4f}",
-            )
-    except KeyboardInterrupt:
-        pass
-
-    print('response_text', response_text)
-    return response_text
-
-
-def copy_to_clipboard(text):
-    import pyperclip
-
-    pyperclip.copy(text.strip())
-    console.log("[green]Copied to clipboard: [/green]", text)
-
-
-def get_clipboard_text():
-    import pyperclip
-
-    # noinspection PyBroadException
-    try:
-        return pyperclip.paste()
-    except:
-        if os.name == 'posix':
-            return os.popen('xclip -selection clipboard -o').read()
+    while True:
+        if query:
+            input_text = " ".join(query)
+            query = None
         else:
-            return os.popen('clip -o').read()
+            input_text = get_multiline_input('You')
+            if not input_text:
+                return chat_provider.response_text
+
+        chat_provider.response_text = ""
+
+        messages.append({'role': 'user', 'content': input_text})
+        chat_provider.print_messages(chat_provider.chat(messages, **kwargs))
+
+        messages.append({'role': 'system', 'content': chat_provider.response_text})
+
+
+def print_current_provider():
+    console.log(f"Current Provider: {openai_helper.config.provider}, Model: {openai_helper.config.model}")

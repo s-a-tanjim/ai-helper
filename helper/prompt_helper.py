@@ -240,13 +240,36 @@ You:
 ```netstat -ano | findstr :<port>```
 """
 
-commit_prompt_template = ("Rewrite the following Git diff into a concise and informative commit message within 75 "
-                          "characters preferably less, using the '-' to indicate removed lines and '+' for added "
-                          "lines. Use unchanged lines for context only:\n")
+commit_prompt_template = (
+    """
+    Rewrite the following Git diff into a concise and informative commit message within 75 
+    characters preferably less, using the '-' to indicate removed lines and '+' for added 
+    lines. Use unchanged lines for context only. Following are some examples: \n\n
+    Diff:
+    new file mode 100644
+    index 0000000..ed1541b
+    +++ b/helper/ChatProviders.py
+    
+    +from rich.live import Live
+    -from rich.markdown import Markdown
+    
+    Commit message: removed usage of Markdown and added Live for live rendering, added file ChatProviders.py
+    
+    Diff:
+    -def cost(total_input_tokens: int, total_output_tokens: int):
+    +def cost(total_input_tokens: int, total_output_tokens: int) -> float:
+    +    million = 1_000_000
+    +
+    
+    Commit message: added return type hint to cost function, added million constant
+    """
+)
 
-commit_prompt_instruction = ("\n\nProvide a short and concise imperative single-line commit message that briefly "
-                             "describes the changes made in this diff. Do not use quote or any other char which is "
-                             "not allowed in commit message.")
+commit_prompt_instruction = (
+    "\n\nProvide a short and concise imperative single-line commit message that briefly "
+    "describes the changes made in this diff. Do not use quote or any other char which is "
+    "not allowed in commit message.\n\nCommit message: "
+)
 
 
 def get_code_diff():

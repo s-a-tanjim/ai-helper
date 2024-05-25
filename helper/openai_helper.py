@@ -4,6 +4,8 @@ from pprint import pprint
 import ollama
 import openai
 
+from helper.console_helper import console
+
 API_KEY_FILE = os.path.expanduser("~/.openai_api_key")
 CONFIG_FILE = os.path.expanduser("~/.openai_config")
 
@@ -56,6 +58,7 @@ def set_provider(provider, save=True):
     config.provider = provider
 
     if save:
+        console.log(f"Saving provider: {provider}")
         config.save()
 
 
@@ -74,6 +77,7 @@ def get_models():
 def set_model(model_name, save=True):
     config.model = model_name
     if save:
+        console.log(f"Saving model: {model_name}")
         config.save()
 
 
@@ -81,22 +85,19 @@ if __name__ == '__main__':
     pprint(get_models())
 
 
-def cost(total_input_tokens: int, total_output_tokens: int):
+def cost(total_input_tokens: int, total_output_tokens: int) -> float:
+    million = 1_000_000
+
     if config.provider == "ollama":
         return 0
 
     model_rate = {
-        "gpt-3.5-turbo": {'input': 0.0015, 'output': 0.002},
-        "gpt-3.5-turbo-16k": {'input': 0.003, 'output': 0.004},
-        'gpt-3.5-turbo-1106': {'input': 0.001, 'output': 0.002},
-        "gpt-4": {'input': 0.03, 'output': 0.06},
-        'gpt-4-1106-preview': {'input': 0.01, 'output': 0.03},
+        "gpt-3.5-turbo": {'input': 0.50 / million, 'output': 1.50 / million},
+        "gpt-4": {'input': 10.00 / million, 'output': 30.00 / million},
+        'gpt-4o': {'input': 5.00 / million, 'output': 15.00 / million},
     }.get(config.model, {'input': 0.0, 'output': 0.0})
 
-    return round(
-        (total_input_tokens * model_rate['input'] / 1000) +
-        (total_output_tokens * model_rate['output'] / 1000)
-        , 4)
+    return round(total_input_tokens * model_rate['input'] + total_output_tokens * model_rate['output'], 4)
 
 
 def chat_completion(messages: list, **kwargs):

@@ -1,3 +1,4 @@
+import os
 import sys
 
 from rich.console import Console
@@ -7,6 +8,21 @@ from helper import openai_helper
 from helper.ChatProviders import OllamaChatProvider, OpenAIChatProvider
 
 console = Console()
+
+
+def copy_to_clipboard(text):
+    import pyperclip
+    # noinspection PyBroadException
+    try:
+        pyperclip.copy(text.strip())
+    except:
+        if os.name == 'posix':
+            os.system(f'echo "{text}" | xclip -selection clipboard')
+        else:
+            os.system(f'echo "{text}" | clip')
+
+    pyperclip.copy(text.strip())
+    console.log("[green]Copied to clipboard: [/green]", text)
 
 
 def get_multiline_input(prompt=""):

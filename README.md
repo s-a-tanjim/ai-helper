@@ -1,4 +1,4 @@
-![alt text](https://github.com/anwar3606/ai-helper/blob/master/images/demo.gif)
+<img src="https://github.com/anwar3606/ai-helper/blob/master/images/demo.gif" width="100%"/>
 
 # AI CLI
 

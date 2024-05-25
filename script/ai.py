@@ -14,7 +14,7 @@ def cli():
     pass
 
 
-@click.command('provider', help="Select a provider")
+@cli.command('provider', help="Select a provider")
 def select_provider():
     try:
         print("Current provider:", openai_helper.config.provider)
@@ -32,7 +32,7 @@ def select_provider():
     openai_helper.set_provider(answers['provider'])
 
 
-@click.command('model', help="Select a model")
+@cli.command('model', help="Select a model")
 def select_model():
     from pprint import pprint
 
@@ -57,14 +57,27 @@ def select_model():
     pprint(model)
 
 
-@click.command('cli', help="Generates cli command using GPT-3")
-@click.argument('query', nargs=-1)
-@click.option('--model', '-m', help="Model to use")
-@click.option('--long', '-l', is_flag=True, help="provides additional information")
-def cli_gpt_completion(query, model, long):
+def add_common_options(func):
+    func = click.option('--model', '-m', help="Model to use")(func)
+    func = click.option('--provider', '-p', help="Provider to use")(func)
+    return func
+
+
+def set_mode_and_provider(model, provider):
     if model:
-        openai_helper.set_model(model)
-    console_helper.console.log("Model: ", openai_helper.config.model)
+        openai_helper.set_model(model, save=False)
+    if provider:
+        openai_helper.set_provider(provider, save=False)
+
+    console_helper.console.log(f"Provider: {openai_helper.config.provider}, Model: {openai_helper.config.model}")
+
+
+@cli.command('cli', help="Generates cli command using GPT-3")
+@click.argument('query', nargs=-1)
+@click.option('--long', '-l', is_flag=True, help="provides additional information")
+@add_common_options
+def cli_gpt_completion(query, long, model, provider):
+    set_mode_and_provider(model, provider)
 
     if os.name == 'posix':
         prompt_text = prompt_helper.unix_prompt_gpt35 if long else prompt_helper.unix_prompt_gpt35_short
@@ -87,13 +100,11 @@ def cli_gpt_completion(query, model, long):
         console_helper.console.log("[yellow]No command found[/yellow]")
 
 
-@click.command('gr', help="Grammar")
+@cli.command('gr', help="Grammar")
 @click.argument('query', nargs=-1)
-@click.option('--model', '-m', help="Model to use")
-def gr_completion(query, model):
-    if model:
-        openai_helper.set_model(model)
-    console_helper.console.log("Model: ", openai_helper.config.model)
+@add_common_options
+def gr_completion(query, model, provider):
+    set_mode_and_provider(model, provider)
 
     messages = [{'role': 'system', 'content': prompt_helper.grammer_system_prompt}]
     if openai_helper.config.provider == "ollama":
@@ -102,13 +113,11 @@ def gr_completion(query, model):
         chat_in_console(messages, query)
 
 
-@click.command('assessment', help="Guess assessment hours")
+@cli.command('assessment', help="Guess assessment hours")
 @click.argument('query', nargs=-1)
-@click.option('--model', '-m', help="Model to use")
-def assessment_completion(query, model):
-    if model:
-        openai_helper.set_model(model)
-    console_helper.console.log("Model: ", openai_helper.config.model)
+@add_common_options
+def assessment_completion(query, model, provider):
+    set_mode_and_provider(model, provider)
 
     messages = [
         {'role': 'system', 'content': prompt_helper.assessment},
@@ -120,13 +129,11 @@ def assessment_completion(query, model):
         chat_in_console(messages, query)
 
 
-@click.command('chat', help="Chat with GPT-3")
+@cli.command('chat', help="Chat with GPT-3")
 @click.argument('query', nargs=-1)
-@click.option('--model', '-m', help="Model to use")
-def chat(query, model):
-    if model:
-        openai_helper.set_model(model)
-    console_helper.console.log("Model: ", openai_helper.config.model)
+@add_common_options
+def chat(query, model, provider):
+    set_mode_and_provider(model, provider)
 
     messages = [
         {'role': 'system', 'content': 'You are a helpful AI assistant. Respond always with Markdown.'},
@@ -138,13 +145,11 @@ def chat(query, model):
         chat_in_console(messages, query)
 
 
-@click.command('summary', help="Summarize text")
+@cli.command('summary', help="Summarize text")
 @click.argument('query', nargs=-1)
-@click.option('--model', '-m', help="Model to use")
-def summary(query, model):
-    if model:
-        openai_helper.set_model(model)
-    console_helper.console.log("Model: ", openai_helper.config.model)
+@add_common_options
+def summary(query, model, provider):
+    set_mode_and_provider(model, provider)
 
     messages = [
         {'role': 'system', 'content': prompt_helper.summary_prompt},
@@ -159,12 +164,10 @@ def summary(query, model):
         chat_in_console(messages, query)
 
 
-@click.command('commit', help="Auto generate commit message & does the commit")
-@click.option('--model', '-m', help="Model to use")
-def commit(model):
-    if model:
-        openai_helper.set_model(model)
-    console_helper.console.log("Model: ", openai_helper.config.model)
+@cli.command('commit', help="Auto generate commit message & does the commit")
+@add_common_options
+def commit(model, provider):
+    set_mode_and_provider(model, provider)
 
     messages = [
         {'role': 'system', 'content': prompt_helper.commit_prompt_template},
@@ -182,15 +185,6 @@ def commit(model):
     if commit_message and click.confirm("Do you want to commit?"):
         os.system(f'git commit -m "{commit_message}"')
 
-
-cli.add_command(select_provider)
-cli.add_command(select_model)
-cli.add_command(gr_completion)
-cli.add_command(cli_gpt_completion)
-cli.add_command(assessment_completion)
-cli.add_command(chat)
-cli.add_command(summary)
-cli.add_command(commit)
 
 if __name__ == '__main__':
     cli()

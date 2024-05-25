@@ -52,9 +52,11 @@ except (FileNotFoundError, TypeError):
     openai.api_key = save_api_key
 
 
-def set_provider(provider):
+def set_provider(provider, save=True):
     config.provider = provider
-    config.save()
+
+    if save:
+        config.save()
 
 
 def get_models():
@@ -69,9 +71,10 @@ def get_models():
         return openai.models.list()
 
 
-def set_model(model_name):
+def set_model(model_name, save=True):
     config.model = model_name
-    config.save()
+    if save:
+        config.save()
 
 
 if __name__ == '__main__':

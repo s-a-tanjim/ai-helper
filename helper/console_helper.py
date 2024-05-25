@@ -5,17 +5,17 @@ from rich.console import Console
 from rich.prompt import Prompt
 
 from helper import openai_helper
-from helper.ChatProviders import OllamaChatProvider, OpenAIChatProvider
+from helper.ChatProviders import get_chat_provider
 
 console = Console()
 
 
 def copy_to_clipboard(text):
     import pyperclip
-    # noinspection PyBroadException
+
     try:
         pyperclip.copy(text.strip())
-    except:
+    except ModuleNotFoundError:
         if os.name == 'posix':
             os.system(f'echo "{text}" | xclip -selection clipboard')
         else:
@@ -23,6 +23,17 @@ def copy_to_clipboard(text):
 
     pyperclip.copy(text.strip())
     console.log("[green]Copied to clipboard: [/green]", text)
+
+
+def get_clipboard_text():
+    import pyperclip
+    try:
+        return pyperclip.paste()
+    except ModuleNotFoundError:
+        if os.name == 'posix':
+            return os.popen('xclip -o').read()
+        else:
+            return os.popen('clip').read()
 
 
 def get_multiline_input(prompt=""):
@@ -38,15 +49,11 @@ def get_multiline_input(prompt=""):
     return "\n".join(lines)
 
 
-def get_chat_provider(provider):
-    if provider == "ollama":
-        return OllamaChatProvider(openai_helper.config.model)
-    else:
-        return OpenAIChatProvider(openai_helper.config.model)
-
-
-def chat_in_console(messages, query, **kwargs):
-    chat_provider = get_chat_provider(openai_helper.config.provider)
+def chat_in_console(model, messages, query, **kwargs):
+    chat_provider = get_chat_provider(openai_helper.global_config.provider)
+    if model:
+        chat_provider.set_model(model)
+    console.log(f"Provider: {chat_provider.provider}, Model: {chat_provider.get_model()}")
 
     while True:
         if query:
@@ -65,5 +72,5 @@ def chat_in_console(messages, query, **kwargs):
         messages.append({'role': 'system', 'content': chat_provider.response_text})
 
 
-def print_current_provider():
-    console.log(f"Current Provider: {openai_helper.config.provider}, Model: {openai_helper.config.model}")
+def print_current_provider(chat_provider):
+    console.log(f"Current Provider: {chat_provider.provider}, Model: {chat_provider.get_model()}")

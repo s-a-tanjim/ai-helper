@@ -143,5 +143,48 @@ def commit(model, provider):
         os.system(f'git commit -m "{commit_message}"')
 
 
+@cli.group()
+def custom():
+    pass
+
+
+@custom.command('create', help="Create a custom prompt")
+@click.argument('name')
+@click.argument('system')
+def custom_create(name, system):
+    # error out if the name collides with a built-in command
+    if name in cli.commands:
+        console.log(f"[red]Error:[/red] Command '{name}' conflicts with a built-in commands! Use a different name.")
+        return
+
+    Config.global_config.prompts[name] = system
+    Config.global_config.save()
+
+
+@custom.command('list', help="List custom prompts")
+def custom_create():
+    for name, system in Config.global_config.prompts.items():
+        console.print(name, ": ", system)
+
+
+def load_custom_prompts():
+    if not Config.global_config.prompts:
+        return
+
+    for name, system in Config.global_config.prompts.items():
+        @cli.command(name, help="Custom prompt")
+        @click.argument('query', nargs=-1)
+        @add_common_options
+        def _custom_prompt(query, model, provider):
+            set_provider(provider)
+
+            messages = [
+                {'role': 'system', 'content': system},
+            ]
+            chat_in_console(model, messages, query)
+
+
+load_custom_prompts()
+
 if __name__ == '__main__':
     cli()

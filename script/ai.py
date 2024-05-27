@@ -45,8 +45,8 @@ def select_model(provider, model):
     global_config = Config.global_config
     provider = provider or global_config.provider
 
-    chat_provider = get_chat_provider(global_config.provider)
-    console.log("Current provider:", global_config.provider, "Current model:", chat_provider.get_model())
+    chat_provider = get_chat_provider(provider)
+    console.log("Current provider:", provider, "Current model:", chat_provider.get_model())
 
     if provider and provider != global_config.provider:
         global_config.provider = provider

@@ -126,36 +126,9 @@ By following these guidelines, summarize the content in a way that highlights ti
 and makes it easier to understand the breadth of the conversation, especially for those who need to catch up quickly."""
 
 # Automated Commit Message Generation from Git Diff
-commit_prompt_template = (
-    """
-    Rewrite the following Git diff into a concise and informative commit message within 75 
-    characters preferably less, using the '-' to indicate removed lines and '+' for added 
-    lines. Use unchanged lines for context only. Following are some examples: \n\n
-    Diff:
-    new file mode 100644
-    index 0000000..ed1541b
-    +++ b/helper/ChatProviders.py
-    
-    +from rich.live import Live
-    -from rich.markdown import Markdown
-    
-    Commit message: removed usage of Markdown and added Live for live rendering, added file ChatProviders.py
-    
-    Diff:
-    -def cost(total_input_tokens: int, total_output_tokens: int):
-    +def cost(total_input_tokens: int, total_output_tokens: int) -> float:
-    +    million = 1_000_000
-    +
-    
-    Commit message: added return type hint to cost function, added million constant
-    """
-)
-
-commit_prompt_instruction = (
-    "\n\nProvide a short and concise imperative single-line commit message that briefly "
-    "describes the changes made in this diff. Do not use quote or any other char which is "
-    "not allowed in commit message.\n\nCommit message: "
-)
+commit_prompt_template = ("Generate a concise git commit message written in present tense for the following code diff. "
+                          "Message must be less then 75 chars. Exclude anything unnecessary. Your entire response will "
+                          "be passed directly into git commit.")
 
 
 def get_code_diff():

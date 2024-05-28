@@ -10,6 +10,8 @@ from rich.prompt import Prompt
 
 from helper import Config
 from helper.Config import Config
+from helper.console import console
+from helper.logger import log
 
 
 class ChatProvider(ABC):
@@ -89,8 +91,6 @@ class ChatProvider(ABC):
         )
 
     def print_footer(self):
-        from helper.console_helper import console
-
         console.rule(
             f"[dim]Model[/]: {self.config.model}    "
             f"[dim]Input[/]: {self.total_input_token:<6}"
@@ -125,7 +125,7 @@ class OllamaChatProvider(ChatProvider):
         self.total_input_token += self.input_token
         self.response_token = 0
 
-        return self.client.chat(model=self.config.model, messages=messages, stream=True)
+        return self.client.chat(model=self.config.model, messages=messages, stream=True, options=kwargs)
 
     def print_messages(self, response):
         with Live(refresh_per_second=6) as live:
@@ -181,7 +181,7 @@ class OpenAIChatProvider(ChatProvider):
             model=self.config.model,
             messages=messages,
             stream=True,
-            **kwargs
+            **self.filter_kwargs(kwargs)
         )
 
     def cost(self):
@@ -206,6 +206,10 @@ class OpenAIChatProvider(ChatProvider):
 
         self.total_response_token += self.response_token
         self.print_footer()
+
+    @staticmethod
+    def filter_kwargs(kwargs):
+        return {key: value for key, value in kwargs.items() if key in ['temperature', 'top_p']}
 
 
 class GoogleChatProvider(ChatProvider):
@@ -264,8 +268,6 @@ class GoogleChatProvider(ChatProvider):
         return content
 
     def _model_cost(self, input_tokens: int, output_tokens: int) -> float:
-        from helper.console_helper import console
-
         one_k = 1_000
         model_rate = {
             "models/gemini-1.5-flash": {'input': 0.000125 / one_k, 'output': 0.000375 / one_k},
@@ -277,7 +279,7 @@ class GoogleChatProvider(ChatProvider):
             if model_name in self.config.model:
                 return round(input_tokens * rate['input'] + output_tokens * rate['output'], 5)
 
-        console.log('[yellow]Pricing info not found for model[/yellow]')
+        log.info('[yellow]Pricing info not found for model[/yellow]')
         return 0.0
 
     def cost(self) -> float:

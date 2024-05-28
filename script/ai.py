@@ -1,3 +1,4 @@
+import functools
 import os
 import re
 
@@ -7,8 +8,8 @@ from inquirer import prompt
 
 from helper import prompt_helper, Config, console_helper
 from helper.ChatProviders import get_chat_provider
-from helper.console_helper import chat_in_console
-from helper.console_helper import console
+from helper.console import console
+from helper.console_helper import chat_in_console, log
 
 
 @click.group()
@@ -19,13 +20,37 @@ def cli():
 def add_common_options(func):
     func = click.option('--model', '-m', help="Model to use")(func)
     func = click.option('--provider', '-p', help="Provider to use")(func)
+    func = click.option('--debug', '-d', is_flag=True, help="Debug mode")(func)
+    return func
+
+
+def add_common_functionality(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if kwargs.get('provider'):
+            Config.global_config.provider = kwargs['provider']
+        kwargs.pop('provider')
+
+        Config.global_config.debug = kwargs['debug']
+        log.setLevel('DEBUG' if kwargs['debug'] else 'INFO')
+        kwargs.pop('debug')
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def add_common_llm_options(func):
+    func = click.option('--temperature', '-t', help="Temperature for sampling", type=float)(func)
+    func = click.option('--top_p', '-tp', help="Top-p for sampling", type=float)(func)
+    func = click.option('--top_k', '-tk', help="Top-k for sampling", type=float)(func)
     return func
 
 
 @cli.command('provider', help="Select a provider")
 def select_provider():
     global_config = Config.global_config
-    console.log("Current provider:", global_config.provider)
+    log.info(f"Current provider: {global_config.provider}")
 
     questions = [
         inquirer.List(
@@ -40,43 +65,40 @@ def select_provider():
 
 
 @cli.command('model', help="Select a model")
-@add_common_options
-def select_model(provider, model):
+@click.option('--provider', '-p', help="Provider to use")
+@click.option('--debug', '-d', is_flag=True, help="Debug mode")
+def select_model(provider, debug):
     global_config = Config.global_config
+    global_config.debug = debug
+
     provider = provider or global_config.provider
 
     chat_provider = get_chat_provider(provider)
-    console.log("Current provider:", provider, "Current model:", chat_provider.get_model())
+    log.info(f"Current provider: {provider} Current model: {chat_provider.get_model()}")
 
     if provider and provider != global_config.provider:
         global_config.provider = provider
         global_config.save()
 
-    chat_provider.set_model(model)
+    chat_provider.set_model()
     chat_provider.save()
 
 
-def set_provider(provider):
-    if provider:
-        Config.global_config.provider = provider
-
-
-@cli.command('cli', help="Generates cli command using GPT-3")
+@cli.command('cli', help="Generates cli commands")
 @click.argument('query', nargs=-1)
 @click.option('--long', '-l', is_flag=True, help="provides additional information")
 @add_common_options
-def cli_gpt_completion(query, long, model, provider):
-    set_provider(provider)
-
+@add_common_functionality
+@add_common_llm_options
+def cli_gpt_completion(query, long, model, **kwargs):
     if os.name == 'posix':
         prompt_text = prompt_helper.cli_linux_prompt_long if long else prompt_helper.cli_linux_prompt_short
     else:
-        console.log("[yellow]Windows detected[/yellow]")
+        log.info("[yellow]Windows detected[/yellow]")
         prompt_text = prompt_helper.cli_windows_prompt_long if long else prompt_helper.cli_windows_prompt_short
 
     messages = [{'role': 'system', 'content': prompt_text}]
-
-    last_message_text = chat_in_console(model, messages, query, temperature=0.0)
+    last_message_text = chat_in_console(model, messages, query, **kwargs)
 
     try:
         command = re.findall(r'```(?:\w+\n)?(.*?)```', last_message_text, re.MULTILINE | re.DOTALL)[0]
@@ -84,61 +106,62 @@ def cli_gpt_completion(query, long, model, provider):
             console_helper.copy_to_clipboard(command)
 
     except IndexError:
-        console.log("[yellow]No command found[/yellow]")
+        log.info("[yellow]No command found[/yellow]")
 
 
 @cli.command('gr', help="Grammar")
 @click.argument('query', nargs=-1)
 @add_common_options
-def gr_completion(query, model, provider):
-    set_provider(provider)
-
+@add_common_functionality
+@add_common_llm_options
+def gr_completion(query, model, **kwargs):
     messages = [{'role': 'system', 'content': prompt_helper.grammar_system_prompt}]
-    chat_in_console(model, messages, query)
+    chat_in_console(model, messages, query, **kwargs)
 
 
 @cli.command('chat', help="Chat with GPT-3")
 @click.argument('query', nargs=-1)
 @add_common_options
-def chat(query, model, provider):
-    set_provider(provider)
-
+@add_common_functionality
+@add_common_llm_options
+def chat(query, model, **kwargs):
     messages = [
         {'role': 'system', 'content': 'You are a helpful AI assistant. Respond always with Markdown.'},
     ]
-    chat_in_console(model, messages, query)
+    chat_in_console(model, messages, query, **kwargs)
 
 
 @cli.command('summary', help="Summarize text")
 @click.argument('query', nargs=-1)
 @add_common_options
-def summary(query, model, provider):
-    set_provider(provider)
-
+@add_common_functionality
+@add_common_llm_options
+def summary(query, model, **kwargs):
     messages = [
         {'role': 'system', 'content': prompt_helper.summary_prompt},
     ]
     if not query:
         query = console_helper.get_clipboard_text()
 
-    chat_in_console(model, messages, query)
+    chat_in_console(model, messages, query, **kwargs)
 
 
 @cli.command('commit', help="Auto generate commit message & does the commit")
 @add_common_options
-def commit(model, provider):
-    set_provider(provider)
-
+@add_common_functionality
+@add_common_llm_options
+def commit(model, **kwargs):
     messages = [
         {'role': 'system', 'content': prompt_helper.commit_prompt_template},
     ]
 
     code_diff = prompt_helper.get_code_diff()
+    query = f"Summarize this git diff into a useful commit message: \n{code_diff}"
 
-    commit_message = chat_in_console(model, messages, [code_diff + prompt_helper.commit_prompt_instruction])
+    commit_message = chat_in_console(model, messages, query, **kwargs)
     commit_message = commit_message.strip()
 
-    console.log("Commit message:", commit_message)
+    log.info(f"Commit message: {commit_message}")
     if commit_message and click.confirm("Do you want to commit?"):
         os.system(f'git commit -m "{commit_message}"')
 
@@ -154,7 +177,7 @@ def custom():
 def custom_create(name, system):
     # error out if the name collides with a built-in command
     if name in cli.commands:
-        console.log(f"[red]Error:[/red] Command '{name}' conflicts with a built-in commands! Use a different name.")
+        log.info(f"[red]Error:[/red] Command '{name}' conflicts with a built-in commands! Use a different name.")
         return
 
     Config.global_config.prompts[name] = system
@@ -175,9 +198,8 @@ def load_custom_prompts():
         @cli.command(name, help="Custom prompt")
         @click.argument('query', nargs=-1)
         @add_common_options
-        def _custom_prompt(query, model, provider):
-            set_provider(provider)
-
+        @add_common_functionality
+        def _custom_prompt(query, model):
             messages = [
                 {'role': 'system', 'content': system},
             ]

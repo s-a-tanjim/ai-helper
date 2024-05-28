@@ -1,13 +1,11 @@
 import os
 import sys
 
-from rich.console import Console
 from rich.prompt import Prompt
 
 from helper import Config
 from helper.ChatProviders import get_chat_provider
-
-console = Console()
+from helper.logger import log
 
 
 def copy_to_clipboard(text):
@@ -22,7 +20,7 @@ def copy_to_clipboard(text):
             os.system(f'echo "{text}" | clip')
 
     pyperclip.copy(text.strip())
-    console.log("[green]Copied to clipboard: [/green]", text)
+    log.info(f"[green]Copied to clipboard: [/green] {text}")
 
 
 def get_clipboard_text():
@@ -53,7 +51,7 @@ def chat_in_console(model, messages, query, **kwargs):
     chat_provider = get_chat_provider(Config.global_config.provider)
     if model:
         chat_provider.set_model(model)
-    console.log(f"Provider: {chat_provider.provider}, Model: {chat_provider.get_model()}")
+    log.info(f"Provider: {chat_provider.provider}, Model: {chat_provider.get_model()}")
 
     while True:
         if query:
@@ -73,4 +71,4 @@ def chat_in_console(model, messages, query, **kwargs):
 
 
 def print_current_provider(chat_provider):
-    console.log(f"Current Provider: {chat_provider.provider}, Model: {chat_provider.get_model()}")
+    log.info(f"Current Provider: {chat_provider.provider}, Model: {chat_provider.get_model()}")

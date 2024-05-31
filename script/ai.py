@@ -159,7 +159,7 @@ def commit(model, **kwargs):
     query = f"Summarize this git diff into a useful commit message: \n{code_diff}"
 
     commit_message = chat_in_console(model, messages, query, **kwargs)
-    commit_message = commit_message.strip()
+    commit_message = commit_message.strip().strip('"').strip("'")
 
     log.info(f"Commit message: {commit_message}")
     if commit_message and click.confirm("Do you want to commit?"):

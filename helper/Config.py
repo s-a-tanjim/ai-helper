@@ -29,6 +29,13 @@ class Config:
         else:
             self._data[name] = value
 
+    # add access as dictionary
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        self._data[key] = value
+
     def save(self):
         with open(self._config_file_path, "w") as f:
             f.write(str(self._data))

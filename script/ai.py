@@ -27,9 +27,10 @@ def add_common_options(func):
 def add_common_functionality(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        if kwargs.get('provider'):
-            Config.global_config.provider = kwargs['provider']
-        kwargs.pop('provider')
+        for config_key in ['host', 'provider']:
+            if kwargs.get(config_key):
+                Config.global_config[config_key] = kwargs[config_key]
+                kwargs.pop(config_key)
 
         Config.global_config.debug = kwargs['debug']
         log.setLevel('DEBUG' if kwargs['debug'] else 'INFO')
@@ -67,13 +68,16 @@ def select_provider():
 @cli.command('model', help="Select a model")
 @click.option('--provider', '-p', help="Provider to use")
 @click.option('--debug', '-d', is_flag=True, help="Debug mode")
-def select_model(provider, debug):
+@click.option('--host', '-h', help="Host to use")
+def select_model(provider, debug, host):
     global_config = Config.global_config
     global_config.debug = debug
 
     provider = provider or global_config.provider
 
     chat_provider = get_chat_provider(provider)
+    if host:
+        chat_provider.config.host = host
     log.info(f"Current provider: {provider} Current model: {chat_provider.get_model()}")
 
     if provider and provider != global_config.provider:

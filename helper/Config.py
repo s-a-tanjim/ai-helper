@@ -12,6 +12,12 @@ class Config:
             self._data = default or {}
             self.save()
 
+        if default:
+            for key, value in default.items():
+                if key not in self._data:
+                    self._data[key] = value
+                    self.save()
+
     def __getattribute__(self, name):
         if name.startswith("_") or name not in self._data:
             return super().__getattribute__(name)

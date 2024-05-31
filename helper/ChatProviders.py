@@ -112,8 +112,8 @@ class OllamaChatProvider(ChatProvider):
         import ollama
         super().__init__()
 
-        self.config = Config(self.CONFIG_FILE)
-        self.client = ollama
+        self.config = Config(self.CONFIG_FILE, {"host": "http://localhost:11434"})
+        self.client = ollama.Client(host=self.config.host)
 
     def models(self) -> list[str]:
         models = self.client.list()['models']

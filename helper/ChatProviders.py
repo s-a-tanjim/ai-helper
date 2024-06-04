@@ -1,4 +1,5 @@
 import os
+import time
 from abc import ABC
 
 import inquirer
@@ -26,7 +27,7 @@ class ChatProvider(ABC):
     response_text: str = ""
 
     def __init__(self):
-        pass
+        self.generation_start_time = None
 
     def chat(self, messages, **kwargs):
         raise NotImplementedError
@@ -77,13 +78,20 @@ class ChatProvider(ABC):
         self.config.save()
 
     def update_live_ai_message(self, live: Live):
+        time_diff = time.time() - self.generation_start_time
+        try:
+            speed = self.response_token / time_diff
+        except ZeroDivisionError:
+            speed = 0.0
+
         live.update(
             Padding(
                 Markdown(
                     f'**AI:** {self.response_text}\n'
                     f"\nInput: {self.input_token:<10} "
                     f"Output: {self.response_token:<10} "
-                    f"Cost: {self.cost():<10.4f}"
+                    f"Cost: {self.cost():<.4f}\n"
+                    f"Speed: {speed:.2f} t/s"
                     "\n---"
                 ),
                 (1, 2, 2, 2)
@@ -123,7 +131,9 @@ class OllamaChatProvider(ChatProvider):
     def chat(self, messages, **kwargs):
         self.input_token = self.calculate_input_token(messages)
         self.total_input_token += self.input_token
+
         self.response_token = 0
+        self.generation_start_time = time.time()
 
         return self.client.chat(model=self.config.model, messages=messages, stream=True, options=kwargs)
 
@@ -136,7 +146,7 @@ class OllamaChatProvider(ChatProvider):
 
                 if chunk['message']['content']:
                     self.response_text += chunk['message']['content']
-                    self.response_token += len(chunk['message']['content'].split())
+                    self.response_token += 1
 
                 self.update_live_ai_message(live)
 

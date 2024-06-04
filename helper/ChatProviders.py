@@ -1,6 +1,6 @@
 import os
 import time
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import inquirer
 from inquirer import prompt
@@ -27,13 +27,21 @@ class ChatProvider(ABC):
     response_text: str = ""
 
     def __init__(self):
+        self.UNIT = None
         self.generation_start_time = None
 
+    @abstractmethod
     def chat(self, messages, **kwargs):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def print_messages(self, response):
-        raise NotImplementedError
+        pass
+
+    @property
+    @abstractmethod
+    def unit(self):
+        pass
 
     def cost(self) -> float:
         return 0.0
@@ -50,8 +58,9 @@ class ChatProvider(ABC):
 
             return self.config.model
 
+    @abstractmethod
     def models(self) -> list[str]:
-        raise NotImplementedError
+        pass
 
     def set_model(self, model: str = None):
         if not model:
@@ -91,7 +100,7 @@ class ChatProvider(ABC):
                     f"\nInput: {self.input_token:<10} "
                     f"Output: {self.response_token:<10} "
                     f"Cost: {self.cost():<.4f}\n"
-                    f"Speed: {speed:.2f} t/s"
+                    f"Speed: {speed:.2f} {self.unit}"
                     "\n---"
                 ),
                 (1, 2, 2, 2)
@@ -115,6 +124,7 @@ class ChatProvider(ABC):
 class OllamaChatProvider(ChatProvider):
     provider = "ollama"
     CONFIG_FILE = os.path.expanduser("~/.ollama_config")
+    unit = 'tok/s'
 
     def __init__(self):
         import ollama
@@ -157,6 +167,7 @@ class OllamaChatProvider(ChatProvider):
 class OpenAIChatProvider(ChatProvider):
     provider = "openai"
     CONFIG_FILE = os.path.expanduser("~/.openai_config")
+    unit = 'tok/s'
 
     def __init__(self):
         import openai
@@ -185,7 +196,9 @@ class OpenAIChatProvider(ChatProvider):
     def chat(self, messages, **kwargs):
         self.input_token = self.calculate_input_token(messages)
         self.total_input_token += self.input_token
+
         self.response_token = 0
+        self.generation_start_time = time.time()
 
         return self.client.chat.completions.create(
             model=self.config.model,
@@ -225,6 +238,7 @@ class OpenAIChatProvider(ChatProvider):
 class GoogleChatProvider(ChatProvider):
     provider = "google"
     CONFIG_FILE = os.path.expanduser("~/.google_config")
+    unit = 'char/s'
 
     def __init__(self):
         from google import generativeai as genai
@@ -246,7 +260,9 @@ class GoogleChatProvider(ChatProvider):
     def chat(self, messages, **kwargs):
         self.input_token = self.calculate_input_token(messages)
         self.total_input_token += self.input_token
+
         self.response_token = 0
+        self.generation_start_time = time.time()
 
         messages = self._to_google_message_history(messages)
 

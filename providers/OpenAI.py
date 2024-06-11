@@ -37,7 +37,7 @@ class OpenAIChatProvider(ChatProvider):
         return round(input_tokens * model_rate['input'] + output_tokens * model_rate['output'], 4)
 
     def create_chat_completions(self, messages, **kwargs):
-        return self.client.ChatCompletion.create(
+        return self.client.chat.completions.create(
             model=self.config.model,
             messages=messages,
             stream=True,

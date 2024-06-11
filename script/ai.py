@@ -7,9 +7,9 @@ import rich_click as click
 from inquirer import prompt
 
 from helper import prompt_helper, Config, console_helper
-from helper.ChatProviders import get_chat_provider
 from helper.console import console
 from helper.console_helper import chat_in_console, log
+from providers import get_chat_provider
 
 
 @click.group()

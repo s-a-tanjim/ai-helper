@@ -4,8 +4,8 @@ import sys
 from rich.prompt import Prompt
 
 from helper import Config
-from helper.ChatProviders import get_chat_provider
 from helper.logger import log
+from providers import get_chat_provider
 
 
 def copy_to_clipboard(text):

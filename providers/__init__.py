@@ -5,6 +5,7 @@ from providers.Ollama import OllamaChatProvider
 from providers.Groq import GroqChatProvider
 from providers.Cohere import CohereChatProvider
 from providers.Ai21 import Ai21ChatProvider
+from providers.NLPCloud import NLPCloudChatProvider
 
 
 def get_chat_provider(provider):
@@ -15,4 +16,5 @@ def get_chat_provider(provider):
         "groq": GroqChatProvider,
         'cohere': CohereChatProvider,
         'ai21': Ai21ChatProvider,
+        'nlpcloud': NLPCloudChatProvider,
     }[provider]()

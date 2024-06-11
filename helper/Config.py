@@ -52,7 +52,7 @@ class Config:
                 self._data = content
 
 
-supported_providers = ["openai", "ollama", "google", "groq", "cohere", "ai21"]
+supported_providers = ["openai", "ollama", "google", "groq", "cohere", "ai21", "nlpcloud"]
 global_config = Config(
     os.path.expanduser("~/.ai_config"),
     {

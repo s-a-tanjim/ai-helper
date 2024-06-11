@@ -8,15 +8,16 @@ Provides a cli interface to interact with any AI providers.
 
 ### Providers
 
-| Provider | Status | Get an API key                                             |
-|----------|--------|------------------------------------------------------------|
-| Google   | ✅      | [Google AI Studio](https://aistudio.google.com/app/apikey) |
-| OpenAI   | ✅      | [OpenAI](https://platform.openai.com/api-keys)             |
-| Groq     | ✅      | [Groq](https://console.groq.com/keys)                      |
-| Cohere   | ✅      | [Cohere](https://dashboard.cohere.com/api-keys)            |
-| Ai21     | ✅      | [Ai21](https://studio.ai21.com/account/api-key)            |
-| Ollama   | ✅      | [Not Required, Just Install](https://ollama.com/download)  |
-| Claude   | ❌      |                                                            |
+| Provider  | Status | Get an API key                                             |
+|-----------|--------|------------------------------------------------------------|
+| Google    | ✅      | [Google AI Studio](https://aistudio.google.com/app/apikey) |
+| OpenAI    | ✅      | [OpenAI](https://platform.openai.com/api-keys)             |
+| Groq      | ✅      | [Groq](https://console.groq.com/keys)                      |
+| Cohere    | ✅      | [Cohere](https://dashboard.cohere.com/api-keys)            |
+| Ai21      | ✅      | [Ai21](https://studio.ai21.com/account/api-key)            |
+| NLP Cloud | ✅      | [NLP Cloud](https://nlpcloud.com/home/token)               |
+| Ollama    | ✅      | [Not Required, Just Install](https://ollama.com/download)  |
+| Claude    | ❌      |                                                            |
 
 ### Commands
 

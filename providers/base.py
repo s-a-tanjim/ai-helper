@@ -96,7 +96,7 @@ class ChatProvider(ABC):
                     f'**AI:** {self.response_text}\n'
                     f"\nInput: {self.input_token:<10} "
                     f"Output: {self.response_token:<10} "
-                    f"Cost: {self.cost():<.4f}\n"
+                    f"Cost: {self.cost():<.4f}      \n"
                     f"Speed: {speed:.2f} {self.unit}"
                     "\n---"
                 ),

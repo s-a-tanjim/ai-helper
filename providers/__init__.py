@@ -4,6 +4,7 @@ from providers.Google import GoogleChatProvider
 from providers.Ollama import OllamaChatProvider
 from providers.Groq import GroqChatProvider
 from providers.Cohere import CohereChatProvider
+from providers.Ai21 import Ai21ChatProvider
 
 
 def get_chat_provider(provider):
@@ -12,5 +13,6 @@ def get_chat_provider(provider):
         "openai": OpenAIChatProvider,
         "google": GoogleChatProvider,
         "groq": GroqChatProvider,
-        'cohere': CohereChatProvider
+        'cohere': CohereChatProvider,
+        'ai21': Ai21ChatProvider,
     }[provider]()

@@ -67,7 +67,7 @@ def chat_in_console(model, messages, query, **kwargs):
         messages.append({'role': 'user', 'content': input_text})
         chat_provider.print_messages(chat_provider.chat(messages, **kwargs))
 
-        messages.append({'role': 'system', 'content': chat_provider.response_text})
+        messages.append({'role': 'assistant', 'content': chat_provider.response_text})
 
 
 def print_current_provider(chat_provider):

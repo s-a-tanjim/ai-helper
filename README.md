@@ -14,6 +14,7 @@ Provides a cli interface to interact with any AI providers.
 | OpenAI   | ✅      | [OpenAI](https://platform.openai.com/api-keys)             |
 | Groq     | ✅      | [Groq](https://console.groq.com/keys)                      |
 | Cohere   | ✅      | [Cohere](https://dashboard.cohere.com/api-keys)            |
+| Ai21     | ✅      | [Ai21](https://studio.ai21.com/account/api-key)            |
 | Ollama   | ✅      | [Not Required, Just Install](https://ollama.com/download)  |
 | Claude   | ❌      |                                                            |
 

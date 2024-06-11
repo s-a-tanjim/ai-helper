@@ -36,6 +36,14 @@ class OpenAIChatProvider(ChatProvider):
 
         return round(input_tokens * model_rate['input'] + output_tokens * model_rate['output'], 4)
 
+    def create_chat_completions(self, messages, **kwargs):
+        return self.client.ChatCompletion.create(
+            model=self.config.model,
+            messages=messages,
+            stream=True,
+            **self.filter_kwargs(kwargs)
+        )
+
     def chat(self, messages, **kwargs):
         self.input_token = self.calculate_input_token(messages)
         self.total_input_token += self.input_token
@@ -43,12 +51,7 @@ class OpenAIChatProvider(ChatProvider):
         self.response_token = 0
         self.generation_start_time = time.time()
 
-        return self.client.chat.completions.create(
-            model=self.config.model,
-            messages=messages,
-            stream=True,
-            **self.filter_kwargs(kwargs)
-        )
+        return self.create_chat_completions(messages, **kwargs)
 
     def cost(self):
         return self._model_cost(self.input_token, self.response_token)

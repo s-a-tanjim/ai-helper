@@ -1,5 +1,7 @@
 import os
 
+from helper.console import console
+
 
 class Config:
 
@@ -50,11 +52,17 @@ class Config:
                 self._data = content
 
 
+supported_providers = ["openai", "ollama", "google", "groq", "cohere"]
 global_config = Config(
     os.path.expanduser("~/.ai_config"),
     {
         "provider": "openai",
-        "providers": ["openai", "ollama", "google", "groq"],
+        "providers": supported_providers,
         "prompts": {}
     }
 )
+
+if global_config.providers != supported_providers:
+    console.info("Updating Supported Providers list")
+    global_config.providers = supported_providers
+    global_config.save()

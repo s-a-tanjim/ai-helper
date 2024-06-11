@@ -13,6 +13,7 @@ Provides a cli interface to interact with any AI providers.
 | Google   | ✅      | [Google AI Studio](https://aistudio.google.com/app/apikey) |
 | OpenAI   | ✅      | [OpenAI](https://platform.openai.com/api-keys)             |
 | Groq     | ✅      | [Groq](https://console.groq.com/keys)                      |
+| Cohere   | ✅      | [Cohere](https://dashboard.cohere.com/api-keys)            |
 | Ollama   | ✅      | [Not Required, Just Install](https://ollama.com/download)  |
 | Claude   | ❌      |                                                            |
 

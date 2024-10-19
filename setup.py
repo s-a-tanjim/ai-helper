@@ -7,7 +7,7 @@ with open('requirements.txt') as f:
 setup(
     name='ai',
     version='0.0.1',
-    python_requires='>=3',
+    python_requires='>=3.12',
     install_requires=library_needed,
     packages=find_packages(),
     entry_points={

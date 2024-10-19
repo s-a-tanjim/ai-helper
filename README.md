@@ -1,4 +1,4 @@
-<img src="https://github.com/anwar3606/ai-helper/blob/master/images/demo.gif" width="100%"/>
+<img src="https://github.com/s-a-tanjim/ai-helper/blob/master/images/demo.gif" width="100%"/>
 
 # AI CLI
 
@@ -56,4 +56,9 @@ ai puppy -p google -m gemini-1.5-pro
 git clone https://github.com/anwar3606/ai-helper
 cd ai-helper
 pip install .
+```
+
+# Make it available in bin
+```bash
+sudo ln -s <path-of-project>/venv/bin/ai /usr/bin/ai
 ```
